@@ -33,6 +33,45 @@
         body { font-family: 'Kanit', sans-serif; }
         .matcha-gradient { background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%); }
         .matcha-light { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); }
+        
+        /* Notification Styles */
+        .notification {
+            transform: translateX(100%);
+            transition: all 0.3s ease-in-out;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.hide {
+            transform: translateX(100%);
+        }
+        
+        /* Notification animations */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        /* Modal animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-backdrop {
+            animation: fadeIn 0.2s ease-out;
+        }
+        .modal-content {
+            animation: scaleIn 0.2s ease-out;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -173,10 +212,53 @@
                 
                 <!-- Customer View - Menu Only -->
                 <div id="customerMenuView" class="hidden">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border">
-                        <h3 class="text-lg font-semibold mb-4 text-center">🍵 เมนูของเรา</h3>
-                        <div id="customerProductGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <!-- Customer products will be loaded here -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Menu Section -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                                <h3 class="text-lg font-semibold mb-4 text-center">🍵 เมนูของเรา</h3>
+                                <div id="customerProductGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Customer products will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Review Section -->
+                        <div class="space-y-6">
+                            <!-- Write Review -->
+                            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                                <h3 class="text-lg font-semibold mb-4 text-center">✍️ เขียนรีวิว</h3>
+                                <div class="space-y-4">
+                                    <input type="text" id="reviewerName" placeholder="ชื่อนิรนาม (เช่น ลูกค้าคนที่ 1)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                    
+                                    <!-- Star Rating -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">ให้คะแนน</label>
+                                        <div class="flex justify-center space-x-2" id="starRating">
+                                            <button onclick="setRating(1)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="1">★</button>
+                                            <button onclick="setRating(2)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="2">★</button>
+                                            <button onclick="setRating(3)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="3">★</button>
+                                            <button onclick="setRating(4)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="4">★</button>
+                                            <button onclick="setRating(5)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="5">★</button>
+                                        </div>
+                                        <p id="ratingText" class="text-center text-sm font-medium text-gray-600 mt-2 min-h-[20px]">กรุณาให้คะแนน</p>
+                                    </div>
+                                    
+                                    <textarea id="reviewText" placeholder="เขียนรีวิวของคุณ..." rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                                    
+                                    <button onclick="submitReview()" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                        ส่งรีวิว
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Recent Reviews -->
+                            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                                <h3 class="text-lg font-semibold mb-4 text-center">💬 รีวิวล่าสุด</h3>
+                                <div id="recentReviews" class="space-y-3 max-h-96 overflow-y-auto">
+                                    <p class="text-gray-500 text-center py-4">ยังไม่มีรีวิว</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -322,10 +404,15 @@
         </main>
     </div>
 
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-3 max-w-sm">
+        <!-- Notifications will be added here -->
+    </div>
+
     <!-- Modals -->
     <!-- Add Product Modal -->
-    <div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto">
+    <div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto modal-content">
             <h3 class="text-lg font-semibold mb-4">เพิ่มสินค้าใหม่</h3>
             <div class="space-y-4">
                 <input type="text" id="productName" placeholder="ชื่อสินค้า" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
@@ -355,8 +442,8 @@
     </div>
 
     <!-- Edit Product Modal -->
-    <div id="editProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto">
+    <div id="editProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto modal-content">
             <h3 class="text-lg font-semibold mb-4">แก้ไขสินค้า</h3>
             <div class="space-y-4">
                 <input type="hidden" id="editProductId">
@@ -390,8 +477,8 @@
     </div>
 
     <!-- Add Inventory Modal -->
-    <div id="addInventoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-xl shadow-xl w-96">
+    <div id="addInventoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-96 modal-content">
             <h3 class="text-lg font-semibold mb-4">เพิ่มวัตถุดิบ</h3>
             <div class="space-y-4">
                 <input type="text" id="inventoryName" placeholder="ชื่อวัตถุดิบ" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
@@ -418,7 +505,159 @@
         let products = [];
         let inventory = [];
         let sales = [];
+        let reviews = [];
         let salesChart = null;
+        let currentRating = 0;
+        let notificationId = 0;
+
+        // Notification System
+        function showNotification(message, type = 'success', duration = 4000) {
+            const container = document.getElementById('notificationContainer');
+            const id = ++notificationId;
+            
+            // Notification types and their styles
+            const types = {
+                success: {
+                    icon: '✅',
+                    bgColor: 'bg-green-500',
+                    textColor: 'text-white',
+                    borderColor: 'border-green-600'
+                },
+                error: {
+                    icon: '❌',
+                    bgColor: 'bg-red-500',
+                    textColor: 'text-white',
+                    borderColor: 'border-red-600'
+                },
+                warning: {
+                    icon: '⚠️',
+                    bgColor: 'bg-yellow-500',
+                    textColor: 'text-white',
+                    borderColor: 'border-yellow-600'
+                },
+                info: {
+                    icon: 'ℹ️',
+                    bgColor: 'bg-blue-500',
+                    textColor: 'text-white',
+                    borderColor: 'border-blue-600'
+                }
+            };
+            
+            const config = types[type] || types.success;
+            
+            const notification = document.createElement('div');
+            notification.id = `notification-${id}`;
+            notification.className = `notification ${config.bgColor} ${config.textColor} p-4 rounded-lg shadow-lg border-l-4 ${config.borderColor} max-w-sm transform transition-all duration-300 ease-in-out`;
+            
+            notification.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 text-xl">${config.icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium leading-5">${message}</p>
+                    </div>
+                    <button onclick="hideNotification(${id})" class="flex-shrink-0 ml-2 text-white hover:text-gray-200 focus:outline-none">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // Auto hide after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    hideNotification(id);
+                }, duration);
+            }
+            
+            return id;
+        }
+
+        function hideNotification(id) {
+            const notification = document.getElementById(`notification-${id}`);
+            if (notification) {
+                notification.classList.add('hide');
+                notification.classList.remove('show');
+                
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }
+
+        function showConfirmDialog(message, onConfirm, onCancel = null) {
+            const id = ++notificationId;
+            const container = document.getElementById('notificationContainer');
+            
+            const dialog = document.createElement('div');
+            dialog.id = `confirm-dialog-${id}`;
+            dialog.className = 'notification bg-white border border-gray-300 p-4 rounded-lg shadow-xl max-w-sm transform transition-all duration-300 ease-in-out';
+            
+            dialog.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 text-xl">❓</div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-800 leading-5">${message}</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="confirmAction(${id}, true)" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-3 rounded text-sm font-medium transition-colors">
+                            ยืนยัน
+                        </button>
+                        <button onclick="confirmAction(${id}, false)" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-3 rounded text-sm font-medium transition-colors">
+                            ยกเลิก
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(dialog);
+            
+            // Store callbacks
+            window[`confirmCallback_${id}`] = onConfirm;
+            window[`cancelCallback_${id}`] = onCancel;
+            
+            // Trigger animation
+            setTimeout(() => {
+                dialog.classList.add('show');
+            }, 10);
+            
+            return id;
+        }
+
+        function confirmAction(id, confirmed) {
+            const dialog = document.getElementById(`confirm-dialog-${id}`);
+            if (dialog) {
+                dialog.classList.add('hide');
+                dialog.classList.remove('show');
+                
+                setTimeout(() => {
+                    if (dialog.parentNode) {
+                        dialog.parentNode.removeChild(dialog);
+                    }
+                }, 300);
+            }
+            
+            if (confirmed && window[`confirmCallback_${id}`]) {
+                window[`confirmCallback_${id}`]();
+            } else if (!confirmed && window[`cancelCallback_${id}`]) {
+                window[`cancelCallback_${id}`]();
+            }
+            
+            // Clean up callbacks
+            delete window[`confirmCallback_${id}`];
+            delete window[`cancelCallback_${id}`];
+        }
 
         // Firebase helper functions
         async function initializeFirebaseData() {
@@ -431,6 +670,9 @@
                 
                 // Load sales from Firebase
                 await loadSalesFromFirebase();
+                
+                // Load reviews from Firebase
+                await loadReviewsFromFirebase();
                 
                 // If no data exists, create initial data
                 if (products.length === 0) {
@@ -605,6 +847,31 @@
             }
         }
 
+        // Firebase CRUD operations for Reviews
+        async function loadReviewsFromFirebase() {
+            try {
+                const querySnapshot = await window.firestore.getDocs(window.firestore.collection(window.db, 'reviews'));
+                reviews = [];
+                querySnapshot.forEach((doc) => {
+                    reviews.push({ id: doc.id, ...doc.data() });
+                });
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+            }
+        }
+
+        async function saveReviewToFirebase(review) {
+            try {
+                const docRef = await window.firestore.addDoc(window.firestore.collection(window.db, 'reviews'), review);
+                review.id = docRef.id;
+                reviews.push(review);
+                return docRef.id;
+            } catch (error) {
+                console.error('Error saving review:', error);
+                throw error;
+            }
+        }
+
         // Login functions
         function loginAsCustomer() {
             currentUser = 'ลูกค้า';
@@ -621,7 +888,7 @@
                 isAdmin = true;
                 showMainApp();
             } else {
-                alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+                showNotification('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
             }
         }
 
@@ -679,7 +946,7 @@
                 }
             } catch (error) {
                 console.error('Error initializing app:', error);
-                alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                showNotification('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
             } finally {
                 hideLoading();
             }
@@ -728,6 +995,7 @@
                 document.getElementById('customerMenuView').classList.add('hidden');
             } else {
                 loadCustomerMenu();
+                loadRecentReviews();
                 document.getElementById('adminPOSView').classList.add('hidden');
                 document.getElementById('customerMenuView').classList.remove('hidden');
             }
@@ -819,21 +1087,21 @@
                                     <div class="text-center">
                                         <div class="text-lg mb-1">🟡</div>
                                         <div class="text-sm font-medium">25%</div>
-                                        <div class="text-xs text-gray-600">หวานน้อยมาก</div>
+                                        <div class="text-xs text-gray-600">หวานน้อย</div>
                                     </div>
                                 </button>
                                 <button onclick="selectSweetness(50)" class="sweetness-btn p-3 border-2 border-gray-300 rounded-lg hover:border-green-500 transition-colors" data-sweetness="50">
                                     <div class="text-center">
                                         <div class="text-lg mb-1">🟠</div>
                                         <div class="text-sm font-medium">50%</div>
-                                        <div class="text-xs text-gray-600">หวานน้อย</div>
+                                        <div class="text-xs text-gray-600">หวานปกติ</div>
                                     </div>
                                 </button>
                                 <button onclick="selectSweetness(100)" class="sweetness-btn p-3 border-2 border-gray-300 rounded-lg hover:border-green-500 transition-colors" data-sweetness="100">
                                     <div class="text-center">
                                         <div class="text-lg mb-1">🔴</div>
                                         <div class="text-sm font-medium">100%</div>
-                                        <div class="text-xs text-gray-600">หวานปกติ</div>
+                                        <div class="text-xs text-gray-600">หวานเต็มที่</div>
                                     </div>
                                 </button>
                             </div>
@@ -1042,7 +1310,7 @@
 
         async function processOrder() {
             if (cart.length === 0) {
-                alert('กรุณาเลือกสินค้าก่อนชำระเงิน');
+                showNotification('กรุณาเลือกสินค้าก่อนชำระเงิน', 'warning');
                 return;
             }
             
@@ -1073,10 +1341,10 @@
                 updateDashboard();
                 loadRecentSales();
                 
-                alert(`ชำระเงินสำเร็จ!\nยอดรวม: ฿${total}`);
+                showNotification(`ชำระเงินสำเร็จ! ยอดรวม ฿${total}`, 'success');
             } catch (error) {
                 console.error('Error processing order:', error);
-                alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+                showNotification('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
             }
         }
 
@@ -1159,12 +1427,12 @@
             const imageFile = document.getElementById('productImage').files[0];
             
             if (!name || !price || !cost) {
-                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
                 return;
             }
             
             if (cost >= price) {
-                alert('ราคาต้นทุนต้องน้อยกว่าราคาขาย');
+                showNotification('ราคาต้นทุนต้องน้อยกว่าราคาขาย', 'warning');
                 return;
             }
             
@@ -1189,7 +1457,7 @@
                         loadProductsTable();
                         closeModal('addProductModal');
                         clearProductForm();
-                        alert('เพิ่มสินค้าสำเร็จ!');
+                        showNotification('เพิ่มสินค้าสำเร็จ!', 'success');
                     };
                     reader.readAsDataURL(imageFile);
                 } else {
@@ -1198,11 +1466,11 @@
                     loadProductsTable();
                     closeModal('addProductModal');
                     clearProductForm();
-                    alert('เพิ่มสินค้าสำเร็จ!');
+                    showNotification('เพิ่มสินค้าสำเร็จ!', 'success');
                 }
             } catch (error) {
                 console.error('Error adding product:', error);
-                alert('เกิดข้อผิดพลาดในการเพิ่มสินค้า');
+                showNotification('เกิดข้อผิดพลาดในการเพิ่มสินค้า', 'error');
             }
         }
 
@@ -1226,7 +1494,7 @@
                 }
             } catch (error) {
                 console.error('Error toggling product status:', error);
-                alert('เกิดข้อผิดพลาดในการอัปเดตสถานะสินค้า');
+                showNotification('เกิดข้อผิดพลาดในการอัปเดตสถานะสินค้า', 'error');
             }
         }
 
@@ -1288,12 +1556,12 @@
             const imageFile = document.getElementById('editProductImage').files[0];
             
             if (!name || !price || isNaN(cost)) {
-                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
                 return;
             }
             
             if (cost >= price) {
-                alert('ราคาต้นทุนต้องน้อยกว่าราคาขาย');
+                showNotification('ราคาต้นทุนต้องน้อยกว่าราคาขาย', 'warning');
                 return;
             }
             
@@ -1314,7 +1582,7 @@
                         loadProducts();
                         loadProductsTable();
                         closeModal('editProductModal');
-                        alert('อัปเดตสินค้าสำเร็จ!');
+                        showNotification('อัปเดตสินค้าสำเร็จ!', 'success');
                     };
                     reader.readAsDataURL(imageFile);
                 } else {
@@ -1546,9 +1814,8 @@
             
             recentSales.forEach(sale => {
                 const saleDiv = document.createElement('div');
-                saleDiv.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
+                saleDiv.className = 'p-3 bg-gray-50 rounded-lg border';
                 
-                const itemsText = sale.items.map(item => `${item.name} x${item.quantity}`).join(', ');
                 const saleTime = new Date(sale.timestamp).toLocaleString('th-TH', {
                     month: 'short',
                     day: 'numeric',
@@ -1556,16 +1823,42 @@
                     minute: '2-digit'
                 });
                 
+                // Create detailed items list
+                const itemsHTML = sale.items.map(item => {
+                    let customizationText = '';
+                    if (item.customization || (item.sweetness !== undefined || item.ice)) {
+                        const sweetnessText = item.sweetness !== undefined ? `${item.sweetness}%` : '';
+                        const iceText = item.ice === 'separate' ? 'แยกน้ำแข็ง' : item.ice === 'mixed' ? 'ใส่น้ำแข็ง' : '';
+                        
+                        if (sweetnessText || iceText) {
+                            customizationText = `<span class="text-blue-600 text-xs ml-2">(${sweetnessText}${sweetnessText && iceText ? ', ' : ''}${iceText})</span>`;
+                        }
+                    }
+                    
+                    return `
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-medium">${item.name} x${item.quantity}${customizationText}</span>
+                            <span class="text-gray-600">฿${item.price * item.quantity}</span>
+                        </div>
+                    `;
+                }).join('');
+                
                 saleDiv.innerHTML = `
-                    <div class="flex-1">
-                        <p class="font-medium text-sm">${itemsText}</p>
-                        <p class="text-gray-600 text-xs">${saleTime}</p>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="font-semibold text-green-600">฿${sale.total}</span>
-                        <button onclick="deleteSale('${sale.id}')" class="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded bg-red-100 hover:bg-red-200 transition-colors">
-                            ลบ
-                        </button>
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1">
+                            <p class="text-gray-600 text-xs mb-2">${saleTime}</p>
+                            <div class="space-y-1">
+                                ${itemsHTML}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 ml-4">
+                            <div class="text-right">
+                                <span class="font-semibold text-green-600">฿${sale.total}</span>
+                            </div>
+                            <button onclick="deleteSale('${sale.id}')" class="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded bg-red-100 hover:bg-red-200 transition-colors">
+                                ลบ
+                            </button>
+                        </div>
                     </div>
                 `;
                 
@@ -1756,10 +2049,136 @@
             }
         }
 
+        // Review functions
+        function setRating(rating) {
+            currentRating = rating;
+            
+            // Update star display with enhanced visual feedback
+            const stars = document.querySelectorAll('.star-btn');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    // Selected stars - bright yellow with glow effect
+                    star.classList.remove('text-gray-300', 'scale-100');
+                    star.classList.add('text-yellow-400', 'scale-110', 'drop-shadow-lg');
+                    star.style.textShadow = '0 0 10px rgba(251, 191, 36, 0.8)';
+                } else {
+                    // Unselected stars - gray
+                    star.classList.remove('text-yellow-400', 'scale-110', 'drop-shadow-lg');
+                    star.classList.add('text-gray-300', 'scale-100');
+                    star.style.textShadow = 'none';
+                }
+            });
+            
+            // Update rating text with color coding
+            const ratingTexts = ['', 'แย่มาก', 'แย่', 'ปกติ', 'ดี', 'ดีมาก'];
+            const ratingColors = ['', 'text-red-600', 'text-orange-600', 'text-yellow-600', 'text-green-600', 'text-green-700'];
+            const ratingTextElement = document.getElementById('ratingText');
+            
+            if (ratingTextElement) {
+                ratingTextElement.textContent = `${ratingTexts[rating]} (${rating} ดาว)`;
+                ratingTextElement.className = `text-center text-sm font-medium mt-2 min-h-[20px] ${ratingColors[rating]}`;
+            }
+        }
+
+        async function submitReview() {
+            const reviewerName = document.getElementById('reviewerName').value.trim();
+            const reviewText = document.getElementById('reviewText').value.trim();
+            
+            if (!reviewerName) {
+                alert('กรุณาใส่ชื่อนิรนาม');
+                return;
+            }
+            
+            if (currentRating === 0) {
+                alert('กรุณาให้คะแนน');
+                return;
+            }
+            
+            if (!reviewText) {
+                alert('กรุณาเขียนรีวิว');
+                return;
+            }
+            
+            try {
+                const review = {
+                    reviewerName: reviewerName,
+                    rating: currentRating,
+                    reviewText: reviewText,
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString('th-TH'),
+                    timestamp: new Date().toISOString()
+                };
+                
+                await saveReviewToFirebase(review);
+                
+                // Clear form
+                document.getElementById('reviewerName').value = '';
+                document.getElementById('reviewText').value = '';
+                setRating(0);
+                
+                // Reload reviews
+                loadRecentReviews();
+                
+                alert('ส่งรีวิวสำเร็จ! ขอบคุณสำหรับความคิดเห็น');
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                alert('เกิดข้อผิดพลาดในการส่งรีวิว');
+            }
+        }
+
+        function loadRecentReviews() {
+            const recentReviewsDiv = document.getElementById('recentReviews');
+            if (!recentReviewsDiv) return;
+            
+            recentReviewsDiv.innerHTML = '';
+            
+            // Get last 10 reviews, sorted by timestamp (newest first)
+            const recentReviews = [...reviews]
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, 10);
+            
+            if (recentReviews.length === 0) {
+                recentReviewsDiv.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีรีวิว</p>';
+                return;
+            }
+            
+            recentReviews.forEach(review => {
+                const reviewDiv = document.createElement('div');
+                reviewDiv.className = 'p-4 bg-gray-50 rounded-lg border';
+                
+                const reviewTime = new Date(review.timestamp).toLocaleString('th-TH', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Create star display
+                const stars = Array.from({length: 5}, (_, i) => 
+                    i < review.rating ? '⭐' : '☆'
+                ).join('');
+                
+                reviewDiv.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="font-medium text-sm">${review.reviewerName}</span>
+                                <span class="text-yellow-400 text-sm">${stars}</span>
+                            </div>
+                            <p class="text-gray-700 text-sm mb-2">${review.reviewText}</p>
+                            <p class="text-gray-500 text-xs">${reviewTime}</p>
+                        </div>
+                    </div>
+                `;
+                
+                recentReviewsDiv.appendChild(reviewDiv);
+            });
+        }
+
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             console.log('POS System initialized');
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97429c98061364f5',t:'MTc1NjAzNjAxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9742c44cc6dfce9b',t:'MTc1NjAzNzYzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
