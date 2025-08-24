@@ -75,27 +75,25 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Login Screen -->
-    <div id="loginScreen" class="min-h-screen flex items-center justify-center matcha-light">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-96">
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-96 modal-content">
             <div class="text-center mb-8">
                 <div class="text-4xl mb-2">🍵</div>
-                <h1 class="text-2xl font-bold text-green-800">LUV U SO MATCHA</h1>
-                <p class="text-green-600">ระบบ POS</p>
+                <h1 class="text-2xl font-bold text-green-800">เข้าสู่ระบบแม่ค้า</h1>
+                <p class="text-green-600">LUV U SO MATCHA</p>
             </div>
             
             <div class="space-y-4">
-                <button onclick="loginAsCustomer()" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                    เข้าสู่ระบบลูกค้า
-                </button>
+                <input type="text" id="adminUser" placeholder="ชื่อผู้ใช้" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                <input type="password" id="adminPass" placeholder="รหัสผ่าน" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
                 
-                <div class="text-center text-gray-500">หรือ</div>
-                
-                <div class="space-y-3">
-                    <input type="text" id="adminUser" placeholder="ชื่อผู้ใช้" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <input type="password" id="adminPass" placeholder="รหัสผ่าน" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <button onclick="loginAsAdmin()" class="w-full bg-green-700 hover:bg-green-800 text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                        เข้าสู่ระบบแม่ค้า
+                <div class="flex space-x-3">
+                    <button onclick="loginAsAdmin()" class="flex-1 bg-green-700 hover:bg-green-800 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                        เข้าสู่ระบบ
+                    </button>
+                    <button onclick="closeModal('adminLoginModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                        ยกเลิก
                     </button>
                 </div>
             </div>
@@ -113,7 +111,12 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span id="userRole" class="bg-white/20 px-3 py-1 rounded-full text-sm"></span>
-                    <button onclick="logout()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">
+                    <!-- Admin Login Button (only show for customers) -->
+                    <button id="adminLoginBtn" onclick="showAdminLogin()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors customer-only">
+                        👤 แม่ค้า
+                    </button>
+                    <!-- Logout Button (only show for admin) -->
+                    <button id="logoutBtn" onclick="logout()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors admin-only hidden">
                         ออกจากระบบ
                     </button>
                 </div>
@@ -216,7 +219,7 @@
                         <!-- Menu Section -->
                         <div class="lg:col-span-2">
                             <div class="bg-white p-6 rounded-xl shadow-sm border">
-                                <h3 class="text-lg font-semibold mb-4 text-center">🍵 เมนูของเราวันนี้</h3>
+                                <h3 class="text-lg font-semibold mb-4 text-center">🍵 เมนูของเรา</h3>
                                 <div id="customerProductGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <!-- Customer products will be loaded here -->
                                 </div>
@@ -873,10 +876,9 @@
         }
 
         // Login functions
-        function loginAsCustomer() {
-            currentUser = 'ลูกค้า';
-            isAdmin = false;
-            showMainApp();
+        function showAdminLogin() {
+            document.getElementById('adminLoginModal').classList.remove('hidden');
+            document.getElementById('adminLoginModal').classList.add('flex');
         }
 
         function loginAsAdmin() {
@@ -886,6 +888,9 @@
             if (username === 'Admin' && password === '1234') {
                 currentUser = 'แม่ค้า';
                 isAdmin = true;
+                closeModal('adminLoginModal');
+                document.getElementById('adminUser').value = '';
+                document.getElementById('adminPass').value = '';
                 showMainApp();
             } else {
                 showNotification('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
@@ -893,29 +898,35 @@
         }
 
         function logout() {
-            currentUser = null;
+            currentUser = 'ลูกค้า';
             isAdmin = false;
             cart = [];
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('adminUser').value = '';
-            document.getElementById('adminPass').value = '';
+            showMainApp(); // Go back to customer view
         }
 
         async function showMainApp() {
             showLoading();
             
-            document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('userRole').textContent = currentUser;
             
             // Show/hide admin elements
             const adminElements = document.querySelectorAll('.admin-only');
+            const customerElements = document.querySelectorAll('.customer-only');
+            
             adminElements.forEach(el => {
                 if (isAdmin) {
                     el.classList.remove('hidden');
                 } else {
                     el.classList.add('hidden');
+                }
+            });
+            
+            customerElements.forEach(el => {
+                if (isAdmin) {
+                    el.classList.add('hidden');
+                } else {
+                    el.classList.remove('hidden');
                 }
             });
             
@@ -2178,7 +2189,12 @@
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             console.log('POS System initialized');
+            
+            // Auto login as customer when page loads
+            currentUser = 'ลูกค้า';
+            isAdmin = false;
+            showMainApp();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9742c44cc6dfce9b',t:'MTc1NjAzNzYzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9742dd4dc2b2f4cf',t:'MTc1NjAzODY2My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
