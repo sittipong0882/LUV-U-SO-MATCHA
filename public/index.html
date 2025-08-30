@@ -1141,9 +1141,10 @@
                 closeModal('adminLoginModal');
                 document.getElementById('adminUser').value = '';
                 document.getElementById('adminPass').value = '';
+                showNotification('🎉 ยินดีต้อนรับแม่ค้า! เข้าสู่ระบบสำเร็จ', 'success');
                 showMainApp();
             } else {
-                showNotification('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+                showNotification('🔐 ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง', 'error');
             }
         }
 
@@ -1205,9 +1206,16 @@
                 if (isAdmin) {
                     loadRecentSales();
                 }
+                
+                // Welcome notification
+                if (isAdmin) {
+                    showNotification('📊 ระบบพร้อมใช้งาน! ข้อมูลทั้งหมดโหลดเสร็จแล้ว', 'success');
+                } else {
+                    showNotification('🍵 ยินดีต้อนรับสู่ LUV U SO MATCHA! เลือกเมนูที่ชอบได้เลย', 'success');
+                }
             } catch (error) {
                 console.error('Error initializing app:', error);
-                showNotification('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+                showNotification('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล กรุณารีเฟรชหน้าเว็บ', 'error');
             } finally {
                 hideLoading();
             }
@@ -1573,12 +1581,13 @@
 
         async function processOrder() {
             if (cart.length === 0) {
-                showNotification('กรุณาเลือกสินค้าก่อนชำระเงิน', 'warning');
+                showNotification('🛒 กรุณาเลือกสินค้าก่อนชำระเงิน', 'warning');
                 return;
             }
             
             try {
                 const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
                 const order = {
                     items: [...cart],
                     total: total,
@@ -1604,10 +1613,10 @@
                 updateDashboard();
                 loadRecentSales();
                 
-                showNotification(`ชำระเงินสำเร็จ! ยอดรวม ฿${total}`, 'success');
+                showNotification(`💰 ชำระเงินสำเร็จ! ${totalItems} รายการ ยอดรวม ฿${total.toLocaleString()}`, 'success');
             } catch (error) {
                 console.error('Error processing order:', error);
-                showNotification('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+                showNotification('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง', 'error');
             }
         }
 
@@ -1690,12 +1699,12 @@
             const imageFile = document.getElementById('productImage').files[0];
             
             if (!name || !price || !cost) {
-                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                showNotification('📝 กรุณากรอกข้อมูลให้ครบถ้วน (ชื่อสินค้า, ราคาขาย, ราคาต้นทุน)', 'warning');
                 return;
             }
             
             if (cost >= price) {
-                showNotification('ราคาต้นทุนต้องน้อยกว่าราคาขาย', 'warning');
+                showNotification('💰 ราคาต้นทุนต้องน้อยกว่าราคาขาย เพื่อให้มีกำไร', 'warning');
                 return;
             }
             
@@ -1720,7 +1729,7 @@
                         loadProductsTable();
                         closeModal('addProductModal');
                         clearProductForm();
-                        showNotification('เพิ่มสินค้าสำเร็จ!', 'success');
+                        showNotification('🎉 เพิ่มสินค้าใหม่สำเร็จ! พร้อมขายแล้ว', 'success');
                     };
                     reader.readAsDataURL(imageFile);
                 } else {
@@ -1729,11 +1738,11 @@
                     loadProductsTable();
                     closeModal('addProductModal');
                     clearProductForm();
-                    showNotification('เพิ่มสินค้าสำเร็จ!', 'success');
+                    showNotification('🎉 เพิ่มสินค้าใหม่สำเร็จ! พร้อมขายแล้ว', 'success');
                 }
             } catch (error) {
                 console.error('Error adding product:', error);
-                showNotification('เกิดข้อผิดพลาดในการเพิ่มสินค้า', 'error');
+                showNotification('❌ เกิดข้อผิดพลาดในการเพิ่มสินค้า กรุณาลองใหม่อีกครั้ง', 'error');
             }
         }
 
@@ -1819,12 +1828,12 @@
             const imageFile = document.getElementById('editProductImage').files[0];
             
             if (!name || !price || isNaN(cost)) {
-                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                showNotification('📝 กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
                 return;
             }
             
             if (cost >= price) {
-                showNotification('ราคาต้นทุนต้องน้อยกว่าราคาขาย', 'warning');
+                showNotification('💰 ราคาต้นทุนต้องน้อยกว่าราคาขาย เพื่อให้มีกำไร', 'warning');
                 return;
             }
             
@@ -1845,7 +1854,7 @@
                         loadProducts();
                         loadProductsTable();
                         closeModal('editProductModal');
-                        showNotification('อัปเดตสินค้าสำเร็จ!', 'success');
+                        showNotification('✅ อัปเดตสินค้าสำเร็จ! ข้อมูลใหม่ถูกบันทึกแล้ว', 'success');
                     };
                     reader.readAsDataURL(imageFile);
                 } else {
@@ -1853,11 +1862,11 @@
                     loadProducts();
                     loadProductsTable();
                     closeModal('editProductModal');
-                    alert('อัปเดตสินค้าสำเร็จ!');
+                    showNotification('✅ อัปเดตสินค้าสำเร็จ! ข้อมูลใหม่ถูกบันทึกแล้ว', 'success');
                 }
             } catch (error) {
                 console.error('Error updating product:', error);
-                alert('เกิดข้อผิดพลาดในการอัปเดตสินค้า');
+                showNotification('❌ เกิดข้อผิดพลาดในการอัปเดตสินค้า กรุณาลองใหม่อีกครั้ง', 'error');
             }
         }
 
@@ -1999,36 +2008,37 @@
         }
         
         async function deleteSale(saleId) {
-            if (!confirm('คุณต้องการลบประวัติการขายนี้หรือไม่?')) {
-                return;
-            }
+            const sale = sales.find(s => s.id === saleId);
+            if (!sale) return;
             
-            try {
-                const sale = sales.find(s => s.id === saleId);
-                if (!sale) return;
-                
-                // Restore product sold count
-                for (const item of sale.items) {
-                    const product = products.find(p => p.id === item.id);
-                    if (product) {
-                        const newSoldCount = Math.max(0, product.sold - item.quantity);
-                        await updateProductInFirebase(product.id, { sold: newSoldCount });
+            showConfirmDialog(
+                `🗑️ คุณต้องการลบประวัติการขาย ฿${sale.total.toLocaleString()} หรือไม่?`,
+                async () => {
+                    try {
+                        // Restore product sold count
+                        for (const item of sale.items) {
+                            const product = products.find(p => p.id === item.id);
+                            if (product) {
+                                const newSoldCount = Math.max(0, product.sold - item.quantity);
+                                await updateProductInFirebase(product.id, { sold: newSoldCount });
+                            }
+                        }
+                        
+                        // Delete sale from Firebase
+                        await window.firestore.deleteDoc(window.firestore.doc(window.db, 'sales', saleId));
+                        sales = sales.filter(s => s.id !== saleId);
+                        
+                        // Refresh displays
+                        loadRecentSales();
+                        updateDashboard();
+                        
+                        showNotification('🗑️ ลบประวัติการขายสำเร็จ! ข้อมูลถูกอัปเดตแล้ว', 'success');
+                    } catch (error) {
+                        console.error('Error deleting sale:', error);
+                        showNotification('❌ เกิดข้อผิดพลาดในการลบประวัติการขาย', 'error');
                     }
                 }
-                
-                // Delete sale from Firebase
-                await window.firestore.deleteDoc(window.firestore.doc(window.db, 'sales', saleId));
-                sales = sales.filter(s => s.id !== saleId);
-                
-                // Refresh displays
-                loadRecentSales();
-                updateDashboard();
-                
-                alert('ลบประวัติการขายสำเร็จ!');
-            } catch (error) {
-                console.error('Error deleting sale:', error);
-                alert('เกิดข้อผิดพลาดในการลบประวัติการขาย');
-            }
+            );
         }
 
         function createSalesChart() {
@@ -2217,17 +2227,17 @@
             const reviewText = document.getElementById('reviewText').value.trim();
             
             if (!reviewerName) {
-                alert('กรุณาใส่ชื่อนิรนาม');
+                showNotification('👤 กรุณาใส่ชื่อนิรนาม เช่น "ลูกค้าคนที่ 1"', 'warning');
                 return;
             }
             
             if (currentRating === 0) {
-                alert('กรุณาให้คะแนน');
+                showNotification('⭐ กรุณาให้คะแนนก่อนส่งรีวิว', 'warning');
                 return;
             }
             
             if (!reviewText) {
-                alert('กรุณาเขียนรีวิว');
+                showNotification('✍️ กรุณาเขียนรีวิวของคุณ', 'warning');
                 return;
             }
             
@@ -2251,10 +2261,10 @@
                 // Reload reviews
                 loadRecentReviews();
                 
-                alert('ส่งรีวิวสำเร็จ! ขอบคุณสำหรับความคิดเห็น');
+                showNotification(`💬 ส่งรีวิว ${currentRating} ดาวสำเร็จ! ขอบคุณสำหรับความคิดเห็น`, 'success');
             } catch (error) {
                 console.error('Error submitting review:', error);
-                alert('เกิดข้อผิดพลาดในการส่งรีวิว');
+                showNotification('❌ เกิดข้อผิดพลาดในการส่งรีวิว กรุณาลองใหม่อีกครั้ง', 'error');
             }
         }
 
@@ -2484,7 +2494,7 @@
             const replyText = document.getElementById('adminReplyText').value.trim();
             
             if (!replyText) {
-                showNotification('กรุณาเขียนการตอบกลับ', 'warning');
+                showNotification('✍️ กรุณาเขียนการตอบกลับลูกค้า', 'warning');
                 return;
             }
             
@@ -2501,10 +2511,10 @@
                 loadRecentReviews();
                 
                 closeModal('replyReviewModal');
-                showNotification('ตอบกลับรีวิวสำเร็จ!', 'success');
+                showNotification('💬 ตอบกลับรีวิวลูกค้าสำเร็จ! ลูกค้าจะเห็นการตอบกลับของคุณ', 'success');
             } catch (error) {
                 console.error('Error submitting reply:', error);
-                showNotification('เกิดข้อผิดพลาดในการตอบกลับ', 'error');
+                showNotification('❌ เกิดข้อผิดพลาดในการตอบกลับ กรุณาลองใหม่อีกครั้ง', 'error');
             }
         }
 
@@ -2758,7 +2768,7 @@
             const note = document.getElementById('financeNote').value.trim();
             
             if (!date || !type || !item || !amount || amount <= 0) {
-                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                showNotification('📝 กรุณากรอกข้อมูลให้ครบถ้วน (วันที่, ประเภท, รายการ, จำนวนเงิน)', 'warning');
                 return;
             }
             
@@ -2776,10 +2786,13 @@
                 
                 loadFinanceSection();
                 closeModal('addFinanceModal');
-                showNotification('เพิ่มรายการสำเร็จ!', 'success');
+                
+                const typeText = type === 'income' ? 'รายรับ' : 'รายจ่าย';
+                const emoji = type === 'income' ? '💰' : '💸';
+                showNotification(`${emoji} เพิ่ม${typeText} "${item}" จำนวน ฿${amount.toLocaleString()} สำเร็จ!`, 'success');
             } catch (error) {
                 console.error('Error adding finance record:', error);
-                showNotification('เกิดข้อผิดพลาดในการเพิ่มรายการ', 'error');
+                showNotification('❌ เกิดข้อผิดพลาดในการเพิ่มรายการ กรุณาลองใหม่อีกครั้ง', 'error');
             }
         }
 
@@ -2809,7 +2822,7 @@
             const note = document.getElementById('editFinanceNote').value.trim();
             
             if (!date || !type || !item || !amount || amount <= 0) {
-                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                showNotification('📝 กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
                 return;
             }
             
@@ -2826,24 +2839,32 @@
                 
                 loadFinanceSection();
                 closeModal('editFinanceModal');
-                showNotification('อัปเดตรายการสำเร็จ!', 'success');
+                
+                const typeText = type === 'income' ? 'รายรับ' : 'รายจ่าย';
+                const emoji = type === 'income' ? '💰' : '💸';
+                showNotification(`${emoji} อัปเดต${typeText} "${item}" สำเร็จ! ข้อมูลใหม่ถูกบันทึกแล้ว`, 'success');
             } catch (error) {
                 console.error('Error updating finance record:', error);
-                showNotification('เกิดข้อผิดพลาดในการอัปเดตรายการ', 'error');
+                showNotification('❌ เกิดข้อผิดพลาดในการอัปเดตรายการ กรุณาลองใหม่อีกครั้ง', 'error');
             }
         }
 
         async function deleteFinanceRecord(recordId) {
+            const record = financeRecords.find(r => r.id === recordId);
+            if (!record) return;
+            
+            const typeText = record.type === 'income' ? 'รายรับ' : 'รายจ่าย';
+            
             showConfirmDialog(
-                'คุณต้องการลบรายการนี้หรือไม่?',
+                `🗑️ คุณต้องการลบ${typeText} "${record.item}" จำนวน ฿${record.amount.toLocaleString()} หรือไม่?`,
                 async () => {
                     try {
                         await deleteFinanceRecordFromFirebase(recordId);
                         loadFinanceSection();
-                        showNotification('ลบรายการสำเร็จ!', 'success');
+                        showNotification(`🗑️ ลบ${typeText}สำเร็จ! ข้อมูลถูกอัปเดตแล้ว`, 'success');
                     } catch (error) {
                         console.error('Error deleting finance record:', error);
-                        showNotification('เกิดข้อผิดพลาดในการลบรายการ', 'error');
+                        showNotification('❌ เกิดข้อผิดพลาดในการลบรายการ กรุณาลองใหม่อีกครั้ง', 'error');
                     }
                 }
             );
@@ -2859,5 +2880,5 @@
             showMainApp();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9775a7b3245245bd',t:'MTc1NjU3MTI0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9775b61617295805',t:'MTc1NjU3MTgzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
