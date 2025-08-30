@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUV U SO MATCHA - POS System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
+        
         const firebaseConfig = {
             apiKey: "AIzaSyARsVbxthikHcXx8e5MoOW8OM8bmTb4HUY",
             authDomain: "pos-data-luv-u-so-matcha.firebaseapp.com",
@@ -25,122 +23,76 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
+        
         // Make Firebase functions available globally
         window.db = db;
         window.firestore = { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot };
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
-
-        body {
-            font-family: 'Kanit', sans-serif;
-        }
-
-        .matcha-gradient {
-            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-        }
-
-        .matcha-light {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-        }
-
+        body { font-family: 'Kanit', sans-serif; }
+        .matcha-gradient { background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%); }
+        .matcha-light { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); }
+        
         /* Notification Styles */
         .notification {
             transform: translateX(100%);
             transition: all 0.3s ease-in-out;
         }
-
         .notification.show {
             transform: translateX(0);
         }
-
         .notification.hide {
             transform: translateX(100%);
         }
-
+        
         /* Notification animations */
         @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
-
         @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
         }
-
+        
         /* Modal animations */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-
         @keyframes scaleIn {
-            from {
-                transform: scale(0.9);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
-
+        
         .modal-backdrop {
             animation: fadeIn 0.2s ease-out;
         }
-
         .modal-content {
             animation: scaleIn 0.2s ease-out;
         }
     </style>
 </head>
-
 <body class="bg-gray-50">
     <!-- Admin Login Modal -->
-    <div id="adminLoginModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+    <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-96 modal-content">
             <div class="text-center mb-8">
                 <div class="text-4xl mb-2">🍵</div>
                 <h1 class="text-2xl font-bold text-green-800">เข้าสู่ระบบแม่ค้า</h1>
                 <p class="text-green-600">LUV U SO MATCHA</p>
             </div>
-
+            
             <div class="space-y-4">
-                <input type="text" id="adminUser" placeholder="ชื่อผู้ใช้"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                <input type="password" id="adminPass" placeholder="รหัสผ่าน"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-
+                <input type="text" id="adminUser" placeholder="ชื่อผู้ใช้" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                <input type="password" id="adminPass" placeholder="รหัสผ่าน" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                
                 <div class="flex space-x-3">
-                    <button onclick="loginAsAdmin()"
-                        class="flex-1 bg-green-700 hover:bg-green-800 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                    <button onclick="loginAsAdmin()" class="flex-1 bg-green-700 hover:bg-green-800 text-white py-3 px-4 rounded-lg font-medium transition-colors">
                         เข้าสู่ระบบ
                     </button>
-                    <button onclick="closeModal('adminLoginModal')"
-                        class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                    <button onclick="closeModal('adminLoginModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
                         ยกเลิก
                     </button>
                 </div>
@@ -160,13 +112,11 @@
                 <div class="flex items-center space-x-4">
                     <span id="userRole" class="bg-white/20 px-3 py-1 rounded-full text-sm"></span>
                     <!-- Admin Login Button (only show for customers) -->
-                    <button id="adminLoginBtn" onclick="showAdminLogin()"
-                        class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors customer-only">
+                    <button id="adminLoginBtn" onclick="showAdminLogin()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors customer-only">
                         👤 แม่ค้า
                     </button>
                     <!-- Logout Button (only show for admin) -->
-                    <button id="logoutBtn" onclick="logout()"
-                        class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors admin-only hidden">
+                    <button id="logoutBtn" onclick="logout()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors admin-only hidden">
                         ออกจากระบบ
                     </button>
                 </div>
@@ -176,28 +126,20 @@
         <!-- Navigation -->
         <nav class="bg-white shadow-sm border-b" id="navigationBar">
             <div class="flex space-x-1 p-2">
-                <button onclick="showSection('dashboard')"
-                    class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only"
-                    data-section="dashboard">
+                <button onclick="showSection('dashboard')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only" data-section="dashboard">
                     📊 แดชบอร์ด
                 </button>
-                <button onclick="showSection('sell')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors"
-                    data-section="sell">
+                <button onclick="showSection('sell')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors" data-section="sell">
                     💰 ขายสินค้า
                 </button>
-                <button onclick="showSection('products')"
-                    class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only"
-                    data-section="products">
+                <button onclick="showSection('products')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only" data-section="products">
                     📦 จัดการสินค้า
                 </button>
-                <button onclick="showSection('inventory')"
-                    class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only"
-                    data-section="inventory">
-                    📋 วัตถุดิบ
+
+                <button onclick="showSection('reviews')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only" data-section="reviews">
+                    💬 จัดการรีวิว
                 </button>
-                <button onclick="showSection('reports')"
-                    class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only"
-                    data-section="reports">
+                <button onclick="showSection('reports')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only" data-section="reports">
                     📈 รายงาน
                 </button>
             </div>
@@ -208,7 +150,7 @@
             <!-- Dashboard Section -->
             <div id="dashboardSection" class="section">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">แดชบอร์ด</h2>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <div class="flex items-center justify-between">
@@ -219,7 +161,7 @@
                             <div class="text-3xl">💰</div>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <div class="flex items-center justify-between">
                             <div>
@@ -229,7 +171,7 @@
                             <div class="text-3xl">📈</div>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <div class="flex items-center justify-between">
                             <div>
@@ -239,7 +181,7 @@
                             <div class="text-3xl">🥤</div>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <div class="flex items-center justify-between">
                             <div>
@@ -258,7 +200,7 @@
                             <canvas id="salesChart"></canvas>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <h3 class="text-lg font-semibold mb-4">🏆 เมนูขายดี TOP 5</h3>
                         <div id="dashboardTopProducts" class="space-y-3">
@@ -271,7 +213,7 @@
             <!-- Sell Section -->
             <div id="sellSection" class="section hidden">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6" id="sellSectionTitle">ขายสินค้า</h2>
-
+                
                 <!-- Customer View - Menu Only -->
                 <div id="customerMenuView" class="hidden">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -284,51 +226,36 @@
                                 </div>
                             </div>
                         </div>
-
+                        
                         <!-- Review Section -->
                         <div class="space-y-6">
                             <!-- Write Review -->
                             <div class="bg-white p-6 rounded-xl shadow-sm border">
                                 <h3 class="text-lg font-semibold mb-4 text-center">✍️ เขียนรีวิว</h3>
                                 <div class="space-y-4">
-                                    <input type="text" id="reviewerName" placeholder="ชื่อนิรนาม (เช่น ลูกค้าคนที่ 1)"
-                                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-
+                                    <input type="text" id="reviewerName" placeholder="ชื่อนิรนาม (เช่น ลูกค้าคนที่ 1)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                    
                                     <!-- Star Rating -->
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">ให้คะแนน</label>
                                         <div class="flex justify-center space-x-2" id="starRating">
-                                            <button onclick="setRating(1)"
-                                                class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none"
-                                                data-rating="1">★</button>
-                                            <button onclick="setRating(2)"
-                                                class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none"
-                                                data-rating="2">★</button>
-                                            <button onclick="setRating(3)"
-                                                class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none"
-                                                data-rating="3">★</button>
-                                            <button onclick="setRating(4)"
-                                                class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none"
-                                                data-rating="4">★</button>
-                                            <button onclick="setRating(5)"
-                                                class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none"
-                                                data-rating="5">★</button>
+                                            <button onclick="setRating(1)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="1">★</button>
+                                            <button onclick="setRating(2)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="2">★</button>
+                                            <button onclick="setRating(3)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="3">★</button>
+                                            <button onclick="setRating(4)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="4">★</button>
+                                            <button onclick="setRating(5)" class="star-btn text-4xl text-gray-300 hover:text-yellow-400 hover:scale-110 transition-all duration-200 focus:outline-none" data-rating="5">★</button>
                                         </div>
-                                        <p id="ratingText"
-                                            class="text-center text-sm font-medium text-gray-600 mt-2 min-h-[20px]">
-                                            กรุณาให้คะแนน</p>
+                                        <p id="ratingText" class="text-center text-sm font-medium text-gray-600 mt-2 min-h-[20px]">กรุณาให้คะแนน</p>
                                     </div>
-
-                                    <textarea id="reviewText" placeholder="เขียนรีวิวของคุณ..." rows="4"
-                                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
-
-                                    <button onclick="submitReview()"
-                                        class="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                    
+                                    <textarea id="reviewText" placeholder="เขียนรีวิวของคุณ..." rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                                    
+                                    <button onclick="submitReview()" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
                                         ส่งรีวิว
                                     </button>
                                 </div>
                             </div>
-
+                            
                             <!-- Recent Reviews -->
                             <div class="bg-white p-6 rounded-xl shadow-sm border">
                                 <h3 class="text-lg font-semibold mb-4 text-center">💬 รีวิวล่าสุด</h3>
@@ -349,7 +276,7 @@
                             <!-- Products will be loaded here -->
                         </div>
                     </div>
-
+                    
                     <div class="space-y-6">
                         <!-- Cart -->
                         <div class="bg-white p-6 rounded-xl shadow-sm border">
@@ -357,19 +284,18 @@
                             <div id="cartItems" class="space-y-2 mb-4 max-h-64 overflow-y-auto">
                                 <p class="text-gray-500 text-center py-8">ยังไม่มีสินค้าในตะกร้า</p>
                             </div>
-
+                            
                             <div class="border-t pt-4">
                                 <div class="flex justify-between items-center text-lg font-semibold">
                                     <span>ยอดรวม:</span>
                                     <span id="totalAmount" class="text-green-600">฿0</span>
                                 </div>
-                                <button onclick="processOrder()"
-                                    class="w-full mt-4 bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                <button onclick="processOrder()" class="w-full mt-4 bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
                                     ชำระเงิน
                                 </button>
                             </div>
                         </div>
-
+                        
                         <!-- Sales History -->
                         <div class="bg-white p-6 rounded-xl shadow-sm border">
                             <h3 class="text-lg font-semibold mb-4">ประวัติการขายล่าสุด</h3>
@@ -385,35 +311,22 @@
             <div id="productsSection" class="section hidden admin-only">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">จัดการสินค้า</h2>
-                    <button onclick="showAddProductModal()"
-                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <button onclick="showAddProductModal()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                         + เพิ่มสินค้า
                     </button>
                 </div>
-
+                
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        สินค้า</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        รายละเอียด</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ราคาขาย</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ต้นทุน</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        สถานะ</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        จัดการ</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สินค้า</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รายละเอียด</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ราคาขาย</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ต้นทุน</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody id="productsTable" class="bg-white divide-y divide-gray-200">
@@ -424,25 +337,70 @@
                 </div>
             </div>
 
-            <!-- Inventory Section -->
-            <div id="inventorySection" class="section hidden admin-only">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">จัดการวัตถุดิบ</h2>
-                    <button onclick="showAddInventoryModal()"
-                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                        + เพิ่มวัตถุดิบ
-                    </button>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="inventoryGrid">
-                    <!-- Inventory items will be loaded here -->
+
+            <!-- Reviews Management Section -->
+            <div id="reviewsSection" class="section hidden admin-only">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">จัดการรีวิว</h2>
+                
+                <!-- Reviews Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">รีวิวทั้งหมด</p>
+                                <p id="totalReviews" class="text-2xl font-bold text-blue-600">0</p>
+                            </div>
+                            <div class="text-3xl">💬</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">คะแนนเฉลี่ย</p>
+                                <p id="averageRating" class="text-2xl font-bold text-yellow-600">0.0</p>
+                            </div>
+                            <div class="text-3xl">⭐</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">รีวิวใหม่วันนี้</p>
+                                <p id="todayReviews" class="text-2xl font-bold text-green-600">0</p>
+                            </div>
+                            <div class="text-3xl">📝</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">รอตอบกลับ</p>
+                                <p id="pendingReplies" class="text-2xl font-bold text-orange-600">0</p>
+                            </div>
+                            <div class="text-3xl">⏳</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reviews List -->
+                <div class="bg-white rounded-xl shadow-sm border">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold">รายการรีวิวทั้งหมด</h3>
+                    </div>
+                    <div id="adminReviewsList" class="p-6 space-y-4 max-h-96 overflow-y-auto">
+                        <!-- Reviews will be loaded here -->
+                    </div>
                 </div>
             </div>
 
             <!-- Reports Section -->
             <div id="reportsSection" class="section hidden admin-only">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">รายงานผล</h2>
-
+                
                 <!-- Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
@@ -454,7 +412,7 @@
                             <div class="text-3xl">💰</div>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <div class="flex items-center justify-between">
                             <div>
@@ -464,7 +422,7 @@
                             <div class="text-3xl">📈</div>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <div class="flex items-center justify-between">
                             <div>
@@ -474,7 +432,7 @@
                             <div class="text-3xl">🥤</div>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <div class="flex items-center justify-between">
                             <div>
@@ -485,7 +443,7 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <div class="bg-white p-6 rounded-xl shadow-sm border">
                     <h3 class="text-lg font-semibold mb-4">📈 รายงานสินค้า</h3>
                     <div id="productReport" class="space-y-3">
@@ -503,38 +461,55 @@
 
     <!-- Modals -->
     <!-- Add Product Modal -->
-    <div id="addProductModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+    <div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
         <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto modal-content">
             <h3 class="text-lg font-semibold mb-4">เพิ่มสินค้าใหม่</h3>
             <div class="space-y-4">
-                <input type="text" id="productName" placeholder="ชื่อสินค้า"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <input type="number" id="productPrice" placeholder="ราคาขาย"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <input type="number" id="productCost" placeholder="ราคาต้นทุน"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <textarea id="productDescription" placeholder="รายละเอียดสินค้า" rows="3"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
-
+                <input type="text" id="productName" placeholder="ชื่อสินค้า" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <input type="number" id="productPrice" placeholder="ราคาขาย" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <input type="number" id="productCost" placeholder="ราคาต้นทุน" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <textarea id="productDescription" placeholder="รายละเอียดสินค้า" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                
                 <!-- Image Upload Section -->
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">รูปสินค้า</label>
-                    <input type="file" id="productImage" accept="image/*"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    <input type="file" id="productImage" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                     <div id="imagePreview" class="hidden mt-2">
-                        <img id="previewImg" src="" alt="Preview"
-                            class="w-32 h-32 object-cover rounded-lg border mx-auto">
+                        <img id="previewImg" src="" alt="Preview" class="w-32 h-32 object-cover rounded-lg border mx-auto">
                     </div>
                 </div>
-
+                
                 <div class="flex space-x-3">
-                    <button onclick="addProduct()"
-                        class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors">
+                    <button onclick="addProduct()" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors">
                         เพิ่ม
                     </button>
-                    <button onclick="closeModal('addProductModal')"
-                        class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">
+                    <button onclick="closeModal('addProductModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reply to Review Modal -->
+    <div id="replyReviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto modal-content">
+            <h3 class="text-lg font-semibold mb-4">ตอบกลับรีวิว</h3>
+            
+            <!-- Original Review Display -->
+            <div id="originalReview" class="bg-gray-50 p-4 rounded-lg mb-4">
+                <!-- Original review content will be loaded here -->
+            </div>
+            
+            <div class="space-y-4">
+                <input type="hidden" id="replyReviewId">
+                <textarea id="adminReplyText" placeholder="เขียนการตอบกลับของคุณ..." rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                
+                <div class="flex space-x-3">
+                    <button onclick="submitReply()" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        ส่งการตอบกลับ
+                    </button>
+                    <button onclick="closeModal('replyReviewModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">
                         ยกเลิก
                     </button>
                 </div>
@@ -543,43 +518,33 @@
     </div>
 
     <!-- Edit Product Modal -->
-    <div id="editProductModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+    <div id="editProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
         <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto modal-content">
             <h3 class="text-lg font-semibold mb-4">แก้ไขสินค้า</h3>
             <div class="space-y-4">
                 <input type="hidden" id="editProductId">
-                <input type="text" id="editProductName" placeholder="ชื่อสินค้า"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <input type="number" id="editProductPrice" placeholder="ราคาขาย"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <input type="number" id="editProductCost" placeholder="ราคาต้นทุน"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <textarea id="editProductDescription" placeholder="รายละเอียดสินค้า" rows="3"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
-
+                <input type="text" id="editProductName" placeholder="ชื่อสินค้า" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <input type="number" id="editProductPrice" placeholder="ราคาขาย" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <input type="number" id="editProductCost" placeholder="ราคาต้นทุน" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <textarea id="editProductDescription" placeholder="รายละเอียดสินค้า" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                
                 <!-- Image Upload Section -->
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">รูปสินค้า</label>
-                    <input type="file" id="editProductImage" accept="image/*"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    <input type="file" id="editProductImage" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                     <div id="editImagePreview" class="hidden mt-2">
-                        <img id="editPreviewImg" src="" alt="Preview"
-                            class="w-32 h-32 object-cover rounded-lg border mx-auto">
+                        <img id="editPreviewImg" src="" alt="Preview" class="w-32 h-32 object-cover rounded-lg border mx-auto">
                     </div>
                     <div id="currentImagePreview" class="mt-2">
-                        <img id="currentImg" src="" alt="Current"
-                            class="w-32 h-32 object-cover rounded-lg border mx-auto">
+                        <img id="currentImg" src="" alt="Current" class="w-32 h-32 object-cover rounded-lg border mx-auto">
                     </div>
                 </div>
-
+                
                 <div class="flex space-x-3">
-                    <button onclick="updateProduct()"
-                        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors">
+                    <button onclick="updateProduct()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors">
                         อัปเดต
                     </button>
-                    <button onclick="closeModal('editProductModal')"
-                        class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">
+                    <button onclick="closeModal('editProductModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">
                         ยกเลิก
                     </button>
                 </div>
@@ -587,33 +552,7 @@
         </div>
     </div>
 
-    <!-- Add Inventory Modal -->
-    <div id="addInventoryModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
-        <div class="bg-white p-6 rounded-xl shadow-xl w-96 modal-content">
-            <h3 class="text-lg font-semibold mb-4">เพิ่มวัตถุดิบ</h3>
-            <div class="space-y-4">
-                <input type="text" id="inventoryName" placeholder="ชื่อวัตถุดิบ"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <input type="number" id="inventoryQuantity" placeholder="จำนวน"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <input type="text" id="inventoryUnit" placeholder="หน่วย (เช่น กก., ลิตร)"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <input type="number" id="inventoryMinStock" placeholder="จำนวนขั้นต่ำ"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <div class="flex space-x-3">
-                    <button onclick="addInventoryItem()"
-                        class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors">
-                        เพิ่ม
-                    </button>
-                    <button onclick="closeModal('addInventoryModal')"
-                        class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">
-                        ยกเลิก
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <script>
         // Global variables
@@ -621,7 +560,7 @@
         let isAdmin = false;
         let cart = [];
         let products = [];
-        let inventory = [];
+
         let sales = [];
         let reviews = [];
         let salesChart = null;
@@ -632,7 +571,7 @@
         function showNotification(message, type = 'success', duration = 4000) {
             const container = document.getElementById('notificationContainer');
             const id = ++notificationId;
-
+            
             // Notification types and their styles
             const types = {
                 success: {
@@ -660,13 +599,13 @@
                     borderColor: 'border-blue-600'
                 }
             };
-
+            
             const config = types[type] || types.success;
-
+            
             const notification = document.createElement('div');
             notification.id = `notification-${id}`;
             notification.className = `notification ${config.bgColor} ${config.textColor} p-4 rounded-lg shadow-lg border-l-4 ${config.borderColor} max-w-sm transform transition-all duration-300 ease-in-out`;
-
+            
             notification.innerHTML = `
                 <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0 text-xl">${config.icon}</div>
@@ -680,21 +619,21 @@
                     </button>
                 </div>
             `;
-
+            
             container.appendChild(notification);
-
+            
             // Trigger animation
             setTimeout(() => {
                 notification.classList.add('show');
             }, 10);
-
+            
             // Auto hide after duration
             if (duration > 0) {
                 setTimeout(() => {
                     hideNotification(id);
                 }, duration);
             }
-
+            
             return id;
         }
 
@@ -703,7 +642,7 @@
             if (notification) {
                 notification.classList.add('hide');
                 notification.classList.remove('show');
-
+                
                 setTimeout(() => {
                     if (notification.parentNode) {
                         notification.parentNode.removeChild(notification);
@@ -715,11 +654,11 @@
         function showConfirmDialog(message, onConfirm, onCancel = null) {
             const id = ++notificationId;
             const container = document.getElementById('notificationContainer');
-
+            
             const dialog = document.createElement('div');
             dialog.id = `confirm-dialog-${id}`;
             dialog.className = 'notification bg-white border border-gray-300 p-4 rounded-lg shadow-xl max-w-sm transform transition-all duration-300 ease-in-out';
-
+            
             dialog.innerHTML = `
                 <div class="space-y-4">
                     <div class="flex items-start space-x-3">
@@ -738,18 +677,18 @@
                     </div>
                 </div>
             `;
-
+            
             container.appendChild(dialog);
-
+            
             // Store callbacks
             window[`confirmCallback_${id}`] = onConfirm;
             window[`cancelCallback_${id}`] = onCancel;
-
+            
             // Trigger animation
             setTimeout(() => {
                 dialog.classList.add('show');
             }, 10);
-
+            
             return id;
         }
 
@@ -758,20 +697,20 @@
             if (dialog) {
                 dialog.classList.add('hide');
                 dialog.classList.remove('show');
-
+                
                 setTimeout(() => {
                     if (dialog.parentNode) {
                         dialog.parentNode.removeChild(dialog);
                     }
                 }, 300);
             }
-
+            
             if (confirmed && window[`confirmCallback_${id}`]) {
                 window[`confirmCallback_${id}`]();
             } else if (!confirmed && window[`cancelCallback_${id}`]) {
                 window[`cancelCallback_${id}`]();
             }
-
+            
             // Clean up callbacks
             delete window[`confirmCallback_${id}`];
             delete window[`cancelCallback_${id}`];
@@ -782,25 +721,20 @@
             try {
                 // Load products from Firebase
                 await loadProductsFromFirebase();
-
-                // Load inventory from Firebase
-                await loadInventoryFromFirebase();
-
+                
                 // Load sales from Firebase
                 await loadSalesFromFirebase();
-
+                
                 // Load reviews from Firebase
                 await loadReviewsFromFirebase();
-
+                
                 // If no data exists, create initial data
                 if (products.length === 0) {
                     await createInitialProducts();
                 }
+                
 
-                if (inventory.length === 0) {
-                    await createInitialInventory();
-                }
-
+                
                 console.log('Firebase data initialized successfully');
             } catch (error) {
                 console.error('Error initializing Firebase data:', error);
@@ -816,23 +750,13 @@
                 { name: 'มัทฉะเค้ก', price: 85, cost: 45, emoji: '🍰', active: true, sold: 0 },
                 { name: 'มัทฉะไอศกรีม', price: 55, cost: 30, emoji: '🍦', active: true, sold: 0 }
             ];
-
+            
             for (const product of initialProducts) {
                 await saveProductToFirebase(product);
             }
         }
 
-        async function createInitialInventory() {
-            const initialInventory = [
-                { name: 'ผงมัทฉะ', quantity: 50, unit: 'กก.', minStock: 10 },
-                { name: 'นม', quantity: 100, unit: 'ลิตร', minStock: 20 },
-                { name: 'น้ำตาล', quantity: 30, unit: 'กก.', minStock: 5 }
-            ];
 
-            for (const item of initialInventory) {
-                await saveInventoryToFirebase(item);
-            }
-        }
 
         function initializeLocalData() {
             products = [
@@ -841,11 +765,7 @@
                 { id: 3, name: 'มัทฉะเค้ก', price: 85, cost: 45, emoji: '🍰', active: true, sold: 0 },
                 { id: 4, name: 'มัทฉะไอศกรีม', price: 55, cost: 30, emoji: '🍦', active: true, sold: 0 }
             ];
-            inventory = [
-                { id: 1, name: 'ผงมัทฉะ', quantity: 50, unit: 'กก.', minStock: 10 },
-                { id: 2, name: 'นม', quantity: 100, unit: 'ลิตร', minStock: 20 },
-                { id: 3, name: 'น้ำตาล', quantity: 30, unit: 'กก.', minStock: 5 }
-            ];
+
         }
 
         // Firebase CRUD operations for Products
@@ -877,7 +797,7 @@
             try {
                 const productRef = window.firestore.doc(window.db, 'products', productId);
                 await window.firestore.updateDoc(productRef, updates);
-
+                
                 // Update local array
                 const productIndex = products.findIndex(p => p.id === productId);
                 if (productIndex !== -1) {
@@ -899,46 +819,7 @@
             }
         }
 
-        // Firebase CRUD operations for Inventory
-        async function loadInventoryFromFirebase() {
-            try {
-                const querySnapshot = await window.firestore.getDocs(window.firestore.collection(window.db, 'inventory'));
-                inventory = [];
-                querySnapshot.forEach((doc) => {
-                    inventory.push({ id: doc.id, ...doc.data() });
-                });
-            } catch (error) {
-                console.error('Error loading inventory:', error);
-            }
-        }
 
-        async function saveInventoryToFirebase(item) {
-            try {
-                const docRef = await window.firestore.addDoc(window.firestore.collection(window.db, 'inventory'), item);
-                item.id = docRef.id;
-                inventory.push(item);
-                return docRef.id;
-            } catch (error) {
-                console.error('Error saving inventory item:', error);
-                throw error;
-            }
-        }
-
-        async function updateInventoryInFirebase(itemId, updates) {
-            try {
-                const itemRef = window.firestore.doc(window.db, 'inventory', itemId);
-                await window.firestore.updateDoc(itemRef, updates);
-
-                // Update local array
-                const itemIndex = inventory.findIndex(i => i.id === itemId);
-                if (itemIndex !== -1) {
-                    inventory[itemIndex] = { ...inventory[itemIndex], ...updates };
-                }
-            } catch (error) {
-                console.error('Error updating inventory item:', error);
-                throw error;
-            }
-        }
 
         // Firebase CRUD operations for Sales
         async function loadSalesFromFirebase() {
@@ -990,6 +871,22 @@
             }
         }
 
+        async function updateReviewInFirebase(reviewId, updates) {
+            try {
+                const reviewRef = window.firestore.doc(window.db, 'reviews', reviewId);
+                await window.firestore.updateDoc(reviewRef, updates);
+                
+                // Update local array
+                const reviewIndex = reviews.findIndex(r => r.id === reviewId);
+                if (reviewIndex !== -1) {
+                    reviews[reviewIndex] = { ...reviews[reviewIndex], ...updates };
+                }
+            } catch (error) {
+                console.error('Error updating review:', error);
+                throw error;
+            }
+        }
+
         // Login functions
         function showAdminLogin() {
             document.getElementById('adminLoginModal').classList.remove('hidden');
@@ -999,7 +896,7 @@
         function loginAsAdmin() {
             const username = document.getElementById('adminUser').value;
             const password = document.getElementById('adminPass').value;
-
+            
             if (username === 'Admin' && password === '1234') {
                 currentUser = 'แม่ค้า';
                 isAdmin = true;
@@ -1021,14 +918,14 @@
 
         async function showMainApp() {
             showLoading();
-
+            
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('userRole').textContent = currentUser;
-
+            
             // Show/hide admin elements
             const adminElements = document.querySelectorAll('.admin-only');
             const customerElements = document.querySelectorAll('.customer-only');
-
+            
             adminElements.forEach(el => {
                 if (isAdmin) {
                     el.classList.remove('hidden');
@@ -1036,7 +933,7 @@
                     el.classList.add('hidden');
                 }
             });
-
+            
             customerElements.forEach(el => {
                 if (isAdmin) {
                     el.classList.add('hidden');
@@ -1044,7 +941,7 @@
                     el.classList.remove('hidden');
                 }
             });
-
+            
             // Hide navigation bar for customers
             const navigationBar = document.getElementById('navigationBar');
             if (isAdmin) {
@@ -1052,11 +949,11 @@
             } else {
                 navigationBar.classList.add('hidden');
             }
-
+            
             try {
                 // Initialize Firebase data
                 await initializeFirebaseData();
-
+                
                 // Show appropriate section based on user role
                 if (isAdmin) {
                     showSection('dashboard');
@@ -1064,7 +961,7 @@
                     showSection('sell'); // Customer goes directly to menu
                     document.getElementById('sellSectionTitle').textContent = '🍵 เมนูของเรา';
                 }
-
+                
                 loadProducts();
                 updateDashboard();
                 if (isAdmin) {
@@ -1084,27 +981,27 @@
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.add('hidden');
             });
-
+            
             // Show selected section
             document.getElementById(sectionName + 'Section').classList.remove('hidden');
-
+            
             // Update navigation buttons
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('bg-green-500', 'text-white');
                 btn.classList.add('text-gray-600', 'hover:bg-gray-100');
             });
-
+            
             const activeBtn = document.querySelector(`[data-section="${sectionName}"]`);
             if (activeBtn) {
                 activeBtn.classList.add('bg-green-500', 'text-white');
                 activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
             }
-
+            
             // Load section-specific data
             if (sectionName === 'products') {
                 loadProductsTable();
-            } else if (sectionName === 'inventory') {
-                loadInventory();
+            } else if (sectionName === 'reviews') {
+                loadAdminReviews();
             } else if (sectionName === 'reports') {
                 loadReports();
             } else if (sectionName === 'dashboard') {
@@ -1130,23 +1027,23 @@
         function loadAdminProducts() {
             const productGrid = document.getElementById('productGrid');
             productGrid.innerHTML = '';
-
+            
             products.filter(p => p.active).forEach(product => {
                 const productCard = document.createElement('div');
                 productCard.className = 'bg-gray-50 p-4 rounded-lg border hover:shadow-md transition-shadow cursor-pointer';
                 productCard.onclick = () => addToCart(product);
-
+                
                 productCard.innerHTML = `
                     <div class="text-center">
-                        ${product.image ?
-                        `<img src="${product.image}" alt="${product.name}" class="w-16 h-16 object-cover rounded-lg mb-2 mx-auto">` :
-                        `<div class="text-3xl mb-2">${product.emoji}</div>`
-                    }
+                        ${product.image ? 
+                            `<img src="${product.image}" alt="${product.name}" class="w-16 h-16 object-cover rounded-lg mb-2 mx-auto">` :
+                            `<div class="text-3xl mb-2">${product.emoji}</div>`
+                        }
                         <h4 class="font-medium text-sm">${product.name}</h4>
                         <p class="text-green-600 font-semibold">฿${product.price}</p>
                     </div>
                 `;
-
+                
                 productGrid.appendChild(productCard);
             });
         }
@@ -1154,17 +1051,17 @@
         function loadCustomerMenu() {
             const customerGrid = document.getElementById('customerProductGrid');
             customerGrid.innerHTML = '';
-
+            
             products.filter(p => p.active).forEach(product => {
                 const productCard = document.createElement('div');
                 productCard.className = 'bg-white p-6 rounded-xl shadow-sm border hover:shadow-md transition-shadow';
-
+                
                 productCard.innerHTML = `
                     <div class="text-center">
-                        ${product.image ?
-                        `<img src="${product.image}" alt="${product.name}" class="w-32 h-32 object-cover rounded-lg mb-4 mx-auto">` :
-                        `<div class="text-4xl mb-4">${product.emoji}</div>`
-                    }
+                        ${product.image ? 
+                            `<img src="${product.image}" alt="${product.name}" class="w-32 h-32 object-cover rounded-lg mb-4 mx-auto">` :
+                            `<div class="text-4xl mb-4">${product.emoji}</div>`
+                        }
                         <h4 class="font-semibold text-lg mb-2">${product.name}</h4>
                         <p class="text-green-600 font-bold text-xl">฿${product.price}</p>
                         <div class="mt-4 text-sm text-gray-600">
@@ -1172,7 +1069,7 @@
                         </div>
                     </div>
                 `;
-
+                
                 customerGrid.appendChild(productCard);
             });
         }
@@ -1190,10 +1087,10 @@
                         
                         <!-- Product Info -->
                         <div class="text-center mb-6">
-                            ${product.image ?
-                    `<img src="${product.image}" alt="${product.name}" class="w-20 h-20 object-cover rounded-lg mx-auto mb-2">` :
-                    `<div class="text-3xl mb-2">${product.emoji}</div>`
-                }
+                            ${product.image ? 
+                                `<img src="${product.image}" alt="${product.name}" class="w-20 h-20 object-cover rounded-lg mx-auto mb-2">` :
+                                `<div class="text-3xl mb-2">${product.emoji}</div>`
+                            }
                             <h4 class="font-semibold text-lg">${product.name}</h4>
                             <p class="text-green-600 font-bold">฿${product.price}</p>
                         </div>
@@ -1213,21 +1110,21 @@
                                     <div class="text-center">
                                         <div class="text-lg mb-1">🟡</div>
                                         <div class="text-sm font-medium">25%</div>
-                                        <div class="text-xs text-gray-600">หวานน้อยมาก</div>
+                                        <div class="text-xs text-gray-600">หวานน้อย</div>
                                     </div>
                                 </button>
                                 <button onclick="selectSweetness(50)" class="sweetness-btn p-3 border-2 border-gray-300 rounded-lg hover:border-green-500 transition-colors" data-sweetness="50">
                                     <div class="text-center">
                                         <div class="text-lg mb-1">🟠</div>
                                         <div class="text-sm font-medium">50%</div>
-                                        <div class="text-xs text-gray-600">หวานน้อย</div>
+                                        <div class="text-xs text-gray-600">หวานปกติ</div>
                                     </div>
                                 </button>
                                 <button onclick="selectSweetness(100)" class="sweetness-btn p-3 border-2 border-gray-300 rounded-lg hover:border-green-500 transition-colors" data-sweetness="100">
                                     <div class="text-center">
                                         <div class="text-lg mb-1">🔴</div>
                                         <div class="text-sm font-medium">100%</div>
-                                        <div class="text-xs text-gray-600">หวานปกติ</div>
+                                        <div class="text-xs text-gray-600">หวานเต็มที่</div>
                                     </div>
                                 </button>
                             </div>
@@ -1280,22 +1177,22 @@
                     </div>
                 </div>
             `;
-
+            
             // Remove existing modal if any
             const existingModal = document.getElementById('customizationModal');
             if (existingModal) {
                 existingModal.remove();
             }
-
+            
             // Add modal to body
             document.body.insertAdjacentHTML('beforeend', modalHTML);
-
+            
             // Store current product
             window.currentCustomProduct = product;
             window.selectedSweetness = 50; // Default sweetness
             window.selectedIce = 'mixed'; // Default ice option
             window.customQuantity = 1;
-
+            
             // Set default selections
             selectSweetness(50);
             selectIce('mixed');
@@ -1303,13 +1200,13 @@
 
         function selectSweetness(level) {
             window.selectedSweetness = level;
-
+            
             // Update button styles
             document.querySelectorAll('.sweetness-btn').forEach(btn => {
                 btn.classList.remove('border-green-500', 'bg-green-50');
                 btn.classList.add('border-gray-300');
             });
-
+            
             const selectedBtn = document.querySelector(`[data-sweetness="${level}"]`);
             if (selectedBtn) {
                 selectedBtn.classList.remove('border-gray-300');
@@ -1319,13 +1216,13 @@
 
         function selectIce(option) {
             window.selectedIce = option;
-
+            
             // Update button styles
             document.querySelectorAll('.ice-btn').forEach(btn => {
                 btn.classList.remove('border-green-500', 'bg-green-50');
                 btn.classList.add('border-gray-300');
             });
-
+            
             const selectedBtn = document.querySelector(`[data-ice="${option}"]`);
             if (selectedBtn) {
                 selectedBtn.classList.remove('border-gray-300');
@@ -1343,13 +1240,13 @@
             const sweetness = window.selectedSweetness;
             const ice = window.selectedIce;
             const quantity = window.customQuantity;
-
+            
             // Create unique item key for cart
             const itemKey = `${product.id}_${sweetness}_${ice}`;
-
+            
             // Check if same customization exists
             const existingItem = cart.find(item => item.itemKey === itemKey);
-
+            
             if (existingItem) {
                 existingItem.quantity += quantity;
             } else {
@@ -1366,7 +1263,7 @@
                 };
                 cart.push(customizedProduct);
             }
-
+            
             updateCart();
             closeCustomizationModal();
         }
@@ -1381,25 +1278,25 @@
         function updateCart() {
             const cartItems = document.getElementById('cartItems');
             const totalAmount = document.getElementById('totalAmount');
-
+            
             if (cart.length === 0) {
                 cartItems.innerHTML = '<p class="text-gray-500 text-center py-8">ยังไม่มีสินค้าในตะกร้า</p>';
                 totalAmount.textContent = '฿0';
                 return;
             }
-
+            
             cartItems.innerHTML = '';
             let total = 0;
-
+            
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
-
+                
                 // Format customization display
                 const sweetnessText = item.sweetness !== undefined ? `${item.sweetness}%` : '';
                 const iceText = item.ice === 'separate' ? 'แยกน้ำแข็ง' : item.ice === 'mixed' ? 'ใส่น้ำแข็ง' : '';
                 const customizationText = sweetnessText || iceText ? `(${sweetnessText}${sweetnessText && iceText ? ', ' : ''}${iceText})` : '';
-
+                
                 const cartItem = document.createElement('div');
                 cartItem.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
                 cartItem.innerHTML = `
@@ -1417,10 +1314,10 @@
                         <button onclick="changeCartQuantity(${index}, 1)" class="w-8 h-8 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 flex items-center justify-center font-bold">+</button>
                     </div>
                 `;
-
+                
                 cartItems.appendChild(cartItem);
             });
-
+            
             totalAmount.textContent = `฿${total}`;
         }
 
@@ -1439,7 +1336,7 @@
                 showNotification('กรุณาเลือกสินค้าก่อนชำระเงิน', 'warning');
                 return;
             }
-
+            
             try {
                 const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const order = {
@@ -1449,10 +1346,10 @@
                     time: new Date().toLocaleTimeString('th-TH'),
                     timestamp: new Date().toISOString()
                 };
-
+                
                 // Save order to Firebase
                 await saveSaleToFirebase(order);
-
+                
                 // Update product sold count in Firebase
                 for (const cartItem of cart) {
                     const product = products.find(p => p.id === cartItem.id);
@@ -1461,12 +1358,12 @@
                         await updateProductInFirebase(product.id, { sold: newSoldCount });
                     }
                 }
-
+                
                 cart = [];
                 updateCart();
                 updateDashboard();
                 loadRecentSales();
-
+                
                 showNotification(`ชำระเงินสำเร็จ! ยอดรวม ฿${total}`, 'success');
             } catch (error) {
                 console.error('Error processing order:', error);
@@ -1478,16 +1375,16 @@
         function loadProductsTable() {
             const tbody = document.getElementById('productsTable');
             tbody.innerHTML = '';
-
+            
             products.forEach(product => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            ${product.image ?
-                        `<img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded-lg mr-3">` :
-                        `<span class="text-2xl mr-3">${product.emoji}</span>`
-                    }
+                            ${product.image ? 
+                                `<img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded-lg mr-3">` :
+                                `<span class="text-2xl mr-3">${product.emoji}</span>`
+                            }
                             <span class="font-medium">${product.name}</span>
                         </div>
                     </td>
@@ -1524,17 +1421,17 @@
         function showAddProductModal() {
             document.getElementById('addProductModal').classList.remove('hidden');
             document.getElementById('addProductModal').classList.add('flex');
-
+            
             // Add image preview functionality
             const imageInput = document.getElementById('productImage');
             const imagePreview = document.getElementById('imagePreview');
             const previewImg = document.getElementById('previewImg');
-
-            imageInput.addEventListener('change', function (e) {
+            
+            imageInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function (e) {
+                    reader.onload = function(e) {
                         previewImg.src = e.target.result;
                         imagePreview.classList.remove('hidden');
                     };
@@ -1551,17 +1448,17 @@
             const cost = parseFloat(document.getElementById('productCost').value);
             const description = document.getElementById('productDescription').value;
             const imageFile = document.getElementById('productImage').files[0];
-
+            
             if (!name || !price || !cost) {
                 showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
                 return;
             }
-
+            
             if (cost >= price) {
                 showNotification('ราคาต้นทุนต้องน้อยกว่าราคาขาย', 'warning');
                 return;
             }
-
+            
             try {
                 const newProduct = {
                     name: name,
@@ -1572,11 +1469,11 @@
                     active: true,
                     sold: 0
                 };
-
+                
                 // Handle image upload
                 if (imageFile) {
                     const reader = new FileReader();
-                    reader.onload = async function (e) {
+                    reader.onload = async function(e) {
                         newProduct.image = e.target.result;
                         await saveProductToFirebase(newProduct);
                         loadProducts();
@@ -1627,14 +1524,14 @@
         function showEditProductModal(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-
+            
             // Fill form with current product data
             document.getElementById('editProductId').value = product.id;
             document.getElementById('editProductName').value = product.name;
             document.getElementById('editProductPrice').value = product.price;
             document.getElementById('editProductCost').value = product.cost || 0;
             document.getElementById('editProductDescription').value = product.description || '';
-
+            
             // Show current image if exists
             const currentImagePreview = document.getElementById('currentImagePreview');
             const currentImg = document.getElementById('currentImg');
@@ -1644,25 +1541,25 @@
             } else {
                 currentImagePreview.classList.add('hidden');
             }
-
+            
             // Reset new image preview
             document.getElementById('editImagePreview').classList.add('hidden');
             document.getElementById('editProductImage').value = '';
-
+            
             // Show modal
             document.getElementById('editProductModal').classList.remove('hidden');
             document.getElementById('editProductModal').classList.add('flex');
-
+            
             // Add image preview functionality
             const imageInput = document.getElementById('editProductImage');
             const imagePreview = document.getElementById('editImagePreview');
             const previewImg = document.getElementById('editPreviewImg');
-
-            imageInput.addEventListener('change', function (e) {
+            
+            imageInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function (e) {
+                    reader.onload = function(e) {
                         previewImg.src = e.target.result;
                         imagePreview.classList.remove('hidden');
                     };
@@ -1680,27 +1577,17 @@
             const cost = parseFloat(document.getElementById('editProductCost').value);
             const description = document.getElementById('editProductDescription').value;
             const imageFile = document.getElementById('editProductImage').files[0];
-
+            
             if (!name || !price || isNaN(cost)) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'ข้อมูลไม่ครบถ้วน',
-                    text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-                    confirmButtonText: 'ตกลง'
-                });
+                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
                 return;
             }
-
+            
             if (cost >= price) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'ราคาต้นทุนไม่ถูกต้อง',
-                    text: 'ราคาต้นทุนต้องน้อยกว่าราคาขาย',
-                    confirmButtonText: 'ตกลง'
-                });
+                showNotification('ราคาต้นทุนต้องน้อยกว่าราคาขาย', 'warning');
                 return;
             }
-
+            
             try {
                 const updates = {
                     name: name,
@@ -1708,354 +1595,83 @@
                     cost: cost,
                     description: description
                 };
-
-                // ถ้าเลือกอัปโหลดรูปใหม่
+                
+                // Handle image upload if new image is selected
                 if (imageFile) {
                     const reader = new FileReader();
-                    reader.onload = async function (e) {
+                    reader.onload = async function(e) {
                         updates.image = e.target.result;
-
-                        // แสดง Loading
-                        Swal.fire({
-                            title: 'กำลังอัปเดตสินค้า...',
-                            text: 'กรุณารอสักครู่',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
                         await updateProductInFirebase(productId, updates);
                         loadProducts();
                         loadProductsTable();
                         closeModal('editProductModal');
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'อัปเดตสินค้าสำเร็จ!',
-                            confirmButtonText: 'เยี่ยมเลย'
-                        });
+                        showNotification('อัปเดตสินค้าสำเร็จ!', 'success');
                     };
                     reader.readAsDataURL(imageFile);
                 } else {
-                    // กรณีไม่อัปโหลดรูปใหม่
-                    Swal.fire({
-                        title: 'กำลังอัปเดตสินค้า...',
-                        text: 'กรุณารอสักครู่',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
                     await updateProductInFirebase(productId, updates);
                     loadProducts();
                     loadProductsTable();
                     closeModal('editProductModal');
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'อัปเดตสินค้าสำเร็จ!',
-                        confirmButtonText: 'เยี่ยมเลย'
-                    });
+                    alert('อัปเดตสินค้าสำเร็จ!');
                 }
             } catch (error) {
                 console.error('Error updating product:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถอัปเดตสินค้าได้',
-                    confirmButtonText: 'ลองใหม่'
-                });
+                alert('เกิดข้อผิดพลาดในการอัปเดตสินค้า');
             }
         }
-
 
         async function deleteProduct(productId) {
-            try {
-                const confirmResult = await Swal.fire({
-                    title: 'คุณแน่ใจหรือไม่?',
-                    text: 'คุณต้องการลบสินค้านี้หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'ลบเลย',
-                    cancelButtonText: 'ยกเลิก',
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6'
-                });
-
-                if (!confirmResult.isConfirmed) {
-                    return; // กดยกเลิก
+            if (confirm('คุณต้องการลบสินค้านี้หรือไม่?')) {
+                try {
+                    await deleteProductFromFirebase(productId);
+                    loadProducts();
+                    loadProductsTable();
+                    alert('ลบสินค้าสำเร็จ!');
+                } catch (error) {
+                    console.error('Error deleting product:', error);
+                    alert('เกิดข้อผิดพลาดในการลบสินค้า');
                 }
-
-                // แสดง Loading ระหว่างลบ
-                Swal.fire({
-                    title: 'กำลังลบสินค้า...',
-                    text: 'กรุณารอสักครู่',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                await deleteProductFromFirebase(productId);
-                loadProducts();
-                loadProductsTable();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ลบสินค้าสำเร็จ!',
-                    confirmButtonText: 'ตกลง'
-                });
-            } catch (error) {
-                console.error('Error deleting product:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถลบสินค้าได้',
-                    confirmButtonText: 'ลองใหม่'
-                });
             }
         }
 
-
-        // Inventory management
-        function loadInventory() {
-            const inventoryGrid = document.getElementById('inventoryGrid');
-            inventoryGrid.innerHTML = '';
-
-            inventory.forEach(item => {
-                const isLowStock = item.quantity <= item.minStock;
-                const card = document.createElement('div');
-                card.className = `bg-white p-6 rounded-xl shadow-sm border ${isLowStock ? 'border-red-300 bg-red-50' : ''}`;
-
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="font-semibold text-lg">${item.name}</h3>
-                        ${isLowStock ? '<span class="text-red-500 text-sm">⚠️ ใกล้หมด</span>' : ''}
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm text-gray-600">จำนวน:</span>
-                            <input type="number" value="${item.quantity}" onchange="updateInventoryQuantity('${item.id}', this.value)" 
-                                   class="flex-1 p-2 border border-gray-300 rounded text-center font-bold ${isLowStock ? 'text-red-600 border-red-300' : 'text-green-600'}">
-                            <span class="text-sm text-gray-600">${item.unit}</span>
-                        </div>
-                        <p class="text-gray-600 text-sm">ขั้นต่ำ: ${item.minStock} ${item.unit}</p>
-                    </div>
-                    <div class="mt-4 flex space-x-2">
-                        <button onclick="adjustInventory('${item.id}', 10)" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-3 rounded text-sm transition-colors">
-                            +10
-                        </button>
-                        <button onclick="adjustInventory('${item.id}', -5)" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded text-sm transition-colors">
-                            -5
-                        </button>
-                        <button onclick="deleteInventoryItem('${item.id}')" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-3 rounded text-sm transition-colors">
-                            🗑️
-                        </button>
-                    </div>
-                `;
-
-                inventoryGrid.appendChild(card);
-            });
-        }
-
-        function showAddInventoryModal() {
-            document.getElementById('addInventoryModal').classList.remove('hidden');
-            document.getElementById('addInventoryModal').classList.add('flex');
-        }
-
-        async function addInventoryItem() {
-            const name = document.getElementById('inventoryName').value.trim();
-            const quantity = parseFloat(document.getElementById('inventoryQuantity').value);
-            const unit = document.getElementById('inventoryUnit').value.trim();
-            const minStock = parseFloat(document.getElementById('inventoryMinStock').value);
-
-            if (!name || !quantity || !unit || !minStock) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'ข้อมูลไม่ครบถ้วน',
-                    text: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
-                    confirmButtonText: 'ตกลง'
-                });
-                return;
-            }
-
-            if (minStock >= quantity) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'จำนวนขั้นต่ำไม่ถูกต้อง',
-                    text: 'จำนวนขั้นต่ำต้องน้อยกว่าจำนวนเริ่มต้น',
-                    confirmButtonText: 'ตกลง'
-                });
-                return;
-            }
-
-            try {
-                const newItem = {
-                    name: name,
-                    quantity: quantity,
-                    unit: unit,
-                    minStock: minStock
-                };
-
-                // แสดง Loading
-                Swal.fire({
-                    title: 'กำลังเพิ่มวัตถุดิบ...',
-                    text: 'กรุณารอสักครู่',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                await saveInventoryToFirebase(newItem);
-                loadInventory();
-                closeModal('addInventoryModal');
-
-                // Clear form
-                document.getElementById('inventoryName').value = '';
-                document.getElementById('inventoryQuantity').value = '';
-                document.getElementById('inventoryUnit').value = '';
-                document.getElementById('inventoryMinStock').value = '';
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'เพิ่มวัตถุดิบสำเร็จ!',
-                    confirmButtonText: 'เยี่ยมเลย'
-                });
-            } catch (error) {
-                console.error('Error adding inventory item:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถเพิ่มวัตถุดิบได้',
-                    confirmButtonText: 'ลองใหม่'
-                });
-            }
-        }
-
-
-        async function adjustInventory(itemId, change) {
-            try {
-                const item = inventory.find(i => i.id === itemId);
-                if (item) {
-                    const newQuantity = Math.max(0, item.quantity + change);
-                    await updateInventoryInFirebase(itemId, { quantity: newQuantity });
-                    loadInventory();
-                }
-            } catch (error) {
-                console.error('Error adjusting inventory:', error);
-                alert('เกิดข้อผิดพลาดในการปรับปรุงวัตถุดิบ');
-            }
-        }
-
-        async function updateInventoryQuantity(itemId, newQuantity) {
-            try {
-                const quantity = parseFloat(newQuantity);
-                if (isNaN(quantity) || quantity < 0) {
-                    alert('กรุณาใส่จำนวนที่ถูกต้อง');
-                    loadInventory(); // Reload to reset the input
-                    return;
-                }
-
-                await updateInventoryInFirebase(itemId, { quantity: quantity });
-                loadInventory();
-            } catch (error) {
-                console.error('Error updating inventory quantity:', error);
-                alert('เกิดข้อผิดพลาดในการอัปเดตจำนวนวัตถุดิบ');
-                loadInventory(); // Reload to reset the input
-            }
-        }
-
-        async function deleteInventoryItem(itemId) {
-            try {
-                const confirmResult = await Swal.fire({
-                    title: 'คุณแน่ใจหรือไม่?',
-                    text: 'คุณต้องการลบวัตถุดิบนี้หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'ลบเลย',
-                    cancelButtonText: 'ยกเลิก',
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6'
-                });
-
-                if (!confirmResult.isConfirmed) {
-                    return; // ผู้ใช้กดยกเลิก
-                }
-
-                // แสดง Loading ระหว่างลบ
-                Swal.fire({
-                    title: 'กำลังลบวัตถุดิบ...',
-                    text: 'กรุณารอสักครู่',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // ลบออกจาก Firebase
-                await window.firestore.deleteDoc(window.firestore.doc(window.db, 'inventory', itemId));
-
-                // อัปเดตข้อมูลใน array
-                inventory = inventory.filter(i => i.id !== itemId);
-
-                // โหลดใหม่
-                loadInventory();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ลบวัตถุดิบสำเร็จ!',
-                    confirmButtonText: 'ตกลง'
-                });
-            } catch (error) {
-                console.error('Error deleting inventory item:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถลบวัตถุดิบได้',
-                    confirmButtonText: 'ลองใหม่'
-                });
-            }
-        }
 
 
         // Dashboard and reports
         function updateDashboard() {
             const today = new Date().toISOString().split('T')[0];
             const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-
+            
             const todaySales = sales.filter(sale => sale.date === today);
             const monthSales = sales.filter(sale => sale.date && sale.date.startsWith(currentMonth));
-
+            
             const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
             const todayProfit = Math.round(todayRevenue * 0.4); // 40% profit margin
             const todayCups = todaySales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
             const monthRevenue = monthSales.reduce((sum, sale) => sum + sale.total, 0);
-
+            
             document.getElementById('todaySales').textContent = `฿${todayRevenue}`;
             document.getElementById('todayProfit').textContent = `฿${todayProfit}`;
             document.getElementById('todayCups').textContent = todayCups;
             document.getElementById('monthSales').textContent = `฿${monthRevenue}`;
-
+            
             // Update dashboard top products
             loadDashboardTopProducts();
         }
-
+        
         function loadDashboardTopProducts() {
             const topProducts = [...products]
                 .sort((a, b) => b.sold - a.sold)
                 .slice(0, 5);
-
+            
             const dashboardTopProductsDiv = document.getElementById('dashboardTopProducts');
             dashboardTopProductsDiv.innerHTML = '';
-
+            
             if (topProducts.length === 0 || topProducts.every(p => p.sold === 0)) {
                 dashboardTopProductsDiv.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีข้อมูลการขาย</p>';
                 return;
             }
-
+            
             topProducts.forEach((product, index) => {
                 const item = document.createElement('div');
                 item.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
@@ -2073,44 +1689,44 @@
                 dashboardTopProductsDiv.appendChild(item);
             });
         }
-
+        
         function loadRecentSales() {
             const recentSalesDiv = document.getElementById('recentSales');
             recentSalesDiv.innerHTML = '';
-
+            
             // Get last 10 sales, sorted by timestamp (newest first)
             const recentSales = [...sales]
                 .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
                 .slice(0, 10);
-
+            
             if (recentSales.length === 0) {
                 recentSalesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีประวัติการขาย</p>';
                 return;
             }
-
+            
             recentSales.forEach(sale => {
                 const saleDiv = document.createElement('div');
                 saleDiv.className = 'p-3 bg-gray-50 rounded-lg border';
-
+                
                 const saleTime = new Date(sale.timestamp).toLocaleString('th-TH', {
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-
+                
                 // Create detailed items list
                 const itemsHTML = sale.items.map(item => {
                     let customizationText = '';
                     if (item.customization || (item.sweetness !== undefined || item.ice)) {
                         const sweetnessText = item.sweetness !== undefined ? `${item.sweetness}%` : '';
                         const iceText = item.ice === 'separate' ? 'แยกน้ำแข็ง' : item.ice === 'mixed' ? 'ใส่น้ำแข็ง' : '';
-
+                        
                         if (sweetnessText || iceText) {
                             customizationText = `<span class="text-blue-600 text-xs ml-2">(${sweetnessText}${sweetnessText && iceText ? ', ' : ''}${iceText})</span>`;
                         }
                     }
-
+                    
                     return `
                         <div class="flex justify-between items-center text-sm">
                             <span class="font-medium">${item.name} x${item.quantity}${customizationText}</span>
@@ -2118,7 +1734,7 @@
                         </div>
                     `;
                 }).join('');
-
+                
                 saleDiv.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex-1">
@@ -2137,41 +1753,20 @@
                         </div>
                     </div>
                 `;
-
+                
                 recentSalesDiv.appendChild(saleDiv);
             });
         }
-
+        
         async function deleteSale(saleId) {
+            if (!confirm('คุณต้องการลบประวัติการขายนี้หรือไม่?')) {
+                return;
+            }
+            
             try {
-                const confirmResult = await Swal.fire({
-                    title: 'คุณแน่ใจหรือไม่?',
-                    text: 'คุณต้องการลบประวัติการขายนี้หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'ลบเลย',
-                    cancelButtonText: 'ยกเลิก',
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6'
-                });
-
-                if (!confirmResult.isConfirmed) {
-                    return; // กดยกเลิก
-                }
-
                 const sale = sales.find(s => s.id === saleId);
                 if (!sale) return;
-
-                // แสดง Loading
-                Swal.fire({
-                    title: 'กำลังลบ...',
-                    text: 'กรุณารอสักครู่',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
+                
                 // Restore product sold count
                 for (const item of sale.items) {
                     const product = products.find(p => p.id === item.id);
@@ -2180,57 +1775,46 @@
                         await updateProductInFirebase(product.id, { sold: newSoldCount });
                     }
                 }
-
+                
                 // Delete sale from Firebase
                 await window.firestore.deleteDoc(window.firestore.doc(window.db, 'sales', saleId));
                 sales = sales.filter(s => s.id !== saleId);
-
+                
                 // Refresh displays
                 loadRecentSales();
                 updateDashboard();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ลบสำเร็จ!',
-                    text: 'ประวัติการขายถูกลบออกจากระบบแล้ว',
-                    confirmButtonText: 'ตกลง'
-                });
+                
+                alert('ลบประวัติการขายสำเร็จ!');
             } catch (error) {
                 console.error('Error deleting sale:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถลบประวัติการขายได้',
-                    confirmButtonText: 'ลองใหม่'
-                });
+                alert('เกิดข้อผิดพลาดในการลบประวัติการขาย');
             }
         }
 
-
         function createSalesChart() {
             const ctx = document.getElementById('salesChart').getContext('2d');
-
+            
             // Get last 7 days data
             const last7Days = [];
             const salesData = [];
-
+            
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const dateStr = date.toISOString().split('T')[0];
                 const dayName = date.toLocaleDateString('th-TH', { weekday: 'short' });
-
+                
                 last7Days.push(dayName);
-
+                
                 const daySales = sales.filter(sale => sale.date === dateStr);
                 const dayRevenue = daySales.reduce((sum, sale) => sum + sale.total, 0);
                 salesData.push(dayRevenue);
             }
-
+            
             if (salesChart) {
                 salesChart.destroy();
             }
-
+            
             salesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -2265,11 +1849,11 @@
         function loadReports() {
             // Calculate real financial data
             const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
-
+            
             // Calculate total cost based on actual product costs
             let totalCost = 0;
             let totalCups = 0;
-
+            
             sales.forEach(sale => {
                 sale.items.forEach(item => {
                     const product = products.find(p => p.id === item.id);
@@ -2279,20 +1863,20 @@
                     totalCups += item.quantity;
                 });
             });
-
+            
             const netProfit = totalRevenue - totalCost;
             const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
-
+            
             // Update summary cards
             document.getElementById('totalRevenue').textContent = `฿${totalRevenue}`;
             document.getElementById('netProfit').textContent = `฿${Math.round(netProfit)}`;
             document.getElementById('totalCups').textContent = totalCups;
             document.getElementById('profitMargin').textContent = `${profitMargin}%`;
-
+            
             // Product report
             const productReportDiv = document.getElementById('productReport');
             productReportDiv.innerHTML = '';
-
+            
             // Sort products by revenue (price * sold)
             const productsByRevenue = [...products]
                 .map(product => ({
@@ -2301,12 +1885,12 @@
                     profit: (product.price - (product.cost || 0)) * product.sold
                 }))
                 .sort((a, b) => b.revenue - a.revenue);
-
+            
             if (productsByRevenue.length === 0 || productsByRevenue.every(p => p.sold === 0)) {
                 productReportDiv.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีข้อมูลการขาย</p>';
                 return;
             }
-
+            
             productsByRevenue.forEach((product, index) => {
                 if (product.sold > 0) {
                     const item = document.createElement('div');
@@ -2360,7 +1944,7 @@
         // Review functions
         function setRating(rating) {
             currentRating = rating;
-
+            
             // Update star display with enhanced visual feedback
             const stars = document.querySelectorAll('.star-btn');
             stars.forEach((star, index) => {
@@ -2376,12 +1960,12 @@
                     star.style.textShadow = 'none';
                 }
             });
-
+            
             // Update rating text with color coding
             const ratingTexts = ['', 'แย่มาก', 'แย่', 'ปกติ', 'ดี', 'ดีมาก'];
             const ratingColors = ['', 'text-red-600', 'text-orange-600', 'text-yellow-600', 'text-green-600', 'text-green-700'];
             const ratingTextElement = document.getElementById('ratingText');
-
+            
             if (ratingTextElement) {
                 ratingTextElement.textContent = `${ratingTexts[rating]} (${rating} ดาว)`;
                 ratingTextElement.className = `text-center text-sm font-medium mt-2 min-h-[20px] ${ratingColors[rating]}`;
@@ -2391,48 +1975,23 @@
         async function submitReview() {
             const reviewerName = document.getElementById('reviewerName').value.trim();
             const reviewText = document.getElementById('reviewText').value.trim();
-
+            
             if (!reviewerName) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'กรุณาใส่ชื่อ',
-                    text: 'คุณสามารถใช้ชื่อนิรนามได้',
-                    confirmButtonText: 'ตกลง'
-                });
+                alert('กรุณาใส่ชื่อนิรนาม');
                 return;
             }
-
+            
             if (currentRating === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'ยังไม่ได้ให้คะแนน',
-                    text: 'กรุณาเลือกจำนวนดาวที่ต้องการให้',
-                    confirmButtonText: 'ตกลง'
-                });
+                alert('กรุณาให้คะแนน');
                 return;
             }
-
+            
             if (!reviewText) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'ยังไม่ได้เขียนรีวิว',
-                    text: 'โปรดเขียนรีวิวก่อนกดส่ง',
-                    confirmButtonText: 'ตกลง'
-                });
+                alert('กรุณาเขียนรีวิว');
                 return;
             }
-
+            
             try {
-                // แสดง Loading
-                Swal.fire({
-                    title: 'กำลังส่งรีวิว...',
-                    text: 'กรุณารอสักครู่',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
                 const review = {
                     reviewerName: reviewerName,
                     rating: currentRating,
@@ -2441,67 +2000,75 @@
                     time: new Date().toLocaleTimeString('th-TH'),
                     timestamp: new Date().toISOString()
                 };
-
+                
                 await saveReviewToFirebase(review);
-
+                
                 // Clear form
                 document.getElementById('reviewerName').value = '';
                 document.getElementById('reviewText').value = '';
                 setRating(0);
-
+                
                 // Reload reviews
                 loadRecentReviews();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ส่งรีวิวสำเร็จ!',
-                    text: 'ขอบคุณสำหรับความคิดเห็นของคุณ',
-                    confirmButtonText: 'เยี่ยมเลย'
-                });
+                
+                alert('ส่งรีวิวสำเร็จ! ขอบคุณสำหรับความคิดเห็น');
             } catch (error) {
                 console.error('Error submitting review:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถส่งรีวิวได้ในขณะนี้',
-                    confirmButtonText: 'ลองใหม่'
-                });
+                alert('เกิดข้อผิดพลาดในการส่งรีวิว');
             }
         }
-
 
         function loadRecentReviews() {
             const recentReviewsDiv = document.getElementById('recentReviews');
             if (!recentReviewsDiv) return;
-
+            
             recentReviewsDiv.innerHTML = '';
-
+            
             // Get last 10 reviews, sorted by timestamp (newest first)
             const recentReviews = [...reviews]
                 .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
                 .slice(0, 10);
-
+            
             if (recentReviews.length === 0) {
                 recentReviewsDiv.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีรีวิว</p>';
                 return;
             }
-
+            
             recentReviews.forEach(review => {
                 const reviewDiv = document.createElement('div');
                 reviewDiv.className = 'p-4 bg-gray-50 rounded-lg border';
-
+                
                 const reviewTime = new Date(review.timestamp).toLocaleString('th-TH', {
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-
+                
                 // Create star display
-                const stars = Array.from({ length: 5 }, (_, i) =>
+                const stars = Array.from({length: 5}, (_, i) => 
                     i < review.rating ? '⭐' : '☆'
                 ).join('');
-
+                
+                let replyHTML = '';
+                if (review.adminReply) {
+                    const replyTime = new Date(review.adminReplyTimestamp).toLocaleString('th-TH', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    replyHTML = `
+                        <div class="mt-3 p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="text-green-700 font-medium text-sm">🍵 LUV U SO MATCHA</span>
+                                <span class="text-green-600 text-xs">${replyTime}</span>
+                            </div>
+                            <p class="text-green-800 text-sm">${review.adminReply}</p>
+                        </div>
+                    `;
+                }
+                
                 reviewDiv.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex-1">
@@ -2511,25 +2078,205 @@
                             </div>
                             <p class="text-gray-700 text-sm mb-2">${review.reviewText}</p>
                             <p class="text-gray-500 text-xs">${reviewTime}</p>
+                            ${replyHTML}
                         </div>
                     </div>
                 `;
-
+                
                 recentReviewsDiv.appendChild(reviewDiv);
             });
         }
 
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('POS System initialized');
+        function loadAdminReviews() {
+            updateReviewsStats();
+            
+            const adminReviewsList = document.getElementById('adminReviewsList');
+            adminReviewsList.innerHTML = '';
+            
+            // Sort reviews by timestamp (newest first)
+            const sortedReviews = [...reviews]
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            if (sortedReviews.length === 0) {
+                adminReviewsList.innerHTML = '<p class="text-gray-500 text-center py-8">ยังไม่มีรีวิว</p>';
+                return;
+            }
+            
+            sortedReviews.forEach(review => {
+                const reviewDiv = document.createElement('div');
+                reviewDiv.className = 'p-4 bg-gray-50 rounded-lg border';
+                
+                const reviewTime = new Date(review.timestamp).toLocaleString('th-TH', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Create star display
+                const stars = Array.from({length: 5}, (_, i) => 
+                    i < review.rating ? '⭐' : '☆'
+                ).join('');
+                
+                // Rating color based on score
+                const ratingColors = {
+                    1: 'text-red-600',
+                    2: 'text-orange-600', 
+                    3: 'text-yellow-600',
+                    4: 'text-green-600',
+                    5: 'text-green-700'
+                };
+                
+                let replyHTML = '';
+                let actionButtonHTML = '';
+                
+                if (review.adminReply) {
+                    const replyTime = new Date(review.adminReplyTimestamp).toLocaleString('th-TH', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    replyHTML = `
+                        <div class="mt-3 p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-green-700 font-medium text-sm">🍵 LUV U SO MATCHA</span>
+                                    <span class="text-green-600 text-xs">${replyTime}</span>
+                                </div>
+                                <button onclick="editReply('${review.id}')" class="text-blue-600 hover:text-blue-800 text-xs px-2 py-1 rounded bg-blue-100 hover:bg-blue-200 transition-colors">
+                                    แก้ไข
+                                </button>
+                            </div>
+                            <p class="text-green-800 text-sm">${review.adminReply}</p>
+                        </div>
+                    `;
+                } else {
+                    actionButtonHTML = `
+                        <button onclick="showReplyModal('${review.id}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                            ตอบกลับ
+                        </button>
+                    `;
+                }
+                
+                reviewDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-3">
+                                    <span class="font-medium text-lg">${review.reviewerName}</span>
+                                    <span class="text-yellow-400 text-lg">${stars}</span>
+                                    <span class="text-sm font-medium ${ratingColors[review.rating] || 'text-gray-600'}">(${review.rating}/5)</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-gray-500 text-sm">${reviewTime}</span>
+                                    ${actionButtonHTML}
+                                </div>
+                            </div>
+                            <p class="text-gray-800 mb-2 leading-relaxed">${review.reviewText}</p>
+                            ${replyHTML}
+                        </div>
+                    </div>
+                `;
+                
+                adminReviewsList.appendChild(reviewDiv);
+            });
+        }
 
+        function updateReviewsStats() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Total reviews
+            document.getElementById('totalReviews').textContent = reviews.length;
+            
+            // Average rating
+            if (reviews.length > 0) {
+                const avgRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+                document.getElementById('averageRating').textContent = avgRating.toFixed(1);
+            } else {
+                document.getElementById('averageRating').textContent = '0.0';
+            }
+            
+            // Today's reviews
+            const todayReviews = reviews.filter(review => review.date === today).length;
+            document.getElementById('todayReviews').textContent = todayReviews;
+            
+            // Pending replies
+            const pendingReplies = reviews.filter(review => !review.adminReply).length;
+            document.getElementById('pendingReplies').textContent = pendingReplies;
+        }
+
+        function showReplyModal(reviewId) {
+            const review = reviews.find(r => r.id === reviewId);
+            if (!review) return;
+            
+            // Fill original review info
+            const originalReviewDiv = document.getElementById('originalReview');
+            const stars = Array.from({length: 5}, (_, i) => 
+                i < review.rating ? '⭐' : '☆'
+            ).join('');
+            
+            originalReviewDiv.innerHTML = `
+                <div class="flex items-center space-x-2 mb-2">
+                    <span class="font-medium">${review.reviewerName}</span>
+                    <span class="text-yellow-400">${stars}</span>
+                </div>
+                <p class="text-gray-700">${review.reviewText}</p>
+                <p class="text-gray-500 text-sm mt-2">${new Date(review.timestamp).toLocaleString('th-TH')}</p>
+            `;
+            
+            // Set review ID and clear reply text
+            document.getElementById('replyReviewId').value = reviewId;
+            document.getElementById('adminReplyText').value = review.adminReply || '';
+            
+            // Show modal
+            document.getElementById('replyReviewModal').classList.remove('hidden');
+            document.getElementById('replyReviewModal').classList.add('flex');
+        }
+
+        function editReply(reviewId) {
+            showReplyModal(reviewId);
+        }
+
+        async function submitReply() {
+            const reviewId = document.getElementById('replyReviewId').value;
+            const replyText = document.getElementById('adminReplyText').value.trim();
+            
+            if (!replyText) {
+                showNotification('กรุณาเขียนการตอบกลับ', 'warning');
+                return;
+            }
+            
+            try {
+                const updates = {
+                    adminReply: replyText,
+                    adminReplyTimestamp: new Date().toISOString()
+                };
+                
+                await updateReviewInFirebase(reviewId, updates);
+                
+                // Refresh displays
+                loadAdminReviews();
+                loadRecentReviews();
+                
+                closeModal('replyReviewModal');
+                showNotification('ตอบกลับรีวิวสำเร็จ!', 'success');
+            } catch (error) {
+                console.error('Error submitting reply:', error);
+                showNotification('เกิดข้อผิดพลาดในการตอบกลับ', 'error');
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('POS System initialized');
+            
             // Auto login as customer when page loads
             currentUser = 'ลูกค้า';
             isAdmin = false;
             showMainApp();
         });
     </script>
-    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9742dd4dc2b2f4cf',t:'MTc1NjAzODY2My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
-</body>
-
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97759e5844dd45bd',t:'MTc1NjU3MDg1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
