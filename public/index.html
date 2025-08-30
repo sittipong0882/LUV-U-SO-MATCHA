@@ -139,6 +139,9 @@
                 <button onclick="showSection('reviews')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only" data-section="reviews">
                     💬 จัดการรีวิว
                 </button>
+                <button onclick="showSection('finance')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only" data-section="finance">
+                    💰 จัดการรายรับ-รายจ่าย
+                </button>
                 <button onclick="showSection('reports')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors admin-only" data-section="reports">
                     📈 รายงาน
                 </button>
@@ -397,6 +400,90 @@
                 </div>
             </div>
 
+            <!-- Finance Management Section -->
+            <div id="financeSection" class="section hidden admin-only">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">จัดการรายรับ-รายจ่าย</h2>
+                    <button onclick="showAddFinanceModal()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        + เพิ่มรายการ
+                    </button>
+                </div>
+                
+                <!-- Finance Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">รายรับทั้งหมด</p>
+                                <p id="totalIncome" class="text-2xl font-bold text-green-600">฿0</p>
+                            </div>
+                            <div class="text-3xl">📈</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">รายจ่ายทั้งหมด</p>
+                                <p id="totalExpense" class="text-2xl font-bold text-red-600">฿0</p>
+                            </div>
+                            <div class="text-3xl">📉</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">คงเหลือสุทธิ</p>
+                                <p id="netBalance" class="text-2xl font-bold text-blue-600">฿0</p>
+                            </div>
+                            <div class="text-3xl">💰</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <h3 class="text-lg font-semibold mb-4">📊 รายรับ-รายจ่ายรายเดือน</h3>
+                        <div style="height: 300px; width: 100%;">
+                            <canvas id="financeChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <h3 class="text-lg font-semibold mb-4">🥧 สัดส่วนรายจ่าย</h3>
+                        <div style="height: 300px; width: 100%;">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Finance Records Table -->
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold">รายการทั้งหมด</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภท</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รายการ</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จำนวนเงิน</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">หมายเหตุ</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financeTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Finance records will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Reports Section -->
             <div id="reportsSection" class="section hidden admin-only">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">รายงานผล</h2>
@@ -552,6 +639,100 @@
         </div>
     </div>
 
+    <!-- Add Finance Modal -->
+    <div id="addFinanceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto modal-content">
+            <h3 class="text-lg font-semibold mb-4">เพิ่มรายการรายรับ-รายจ่าย</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">วันที่</label>
+                    <input type="date" id="financeDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ประเภท</label>
+                    <select id="financeType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <option value="">เลือกประเภท</option>
+                        <option value="income">รายรับ</option>
+                        <option value="expense">รายจ่าย</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">รายการ</label>
+                    <input type="text" id="financeItem" placeholder="เช่น ค่าขนส่ง, ค่าเช่าสถานที่, ค่าบริการลูกค้า" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">จำนวนเงิน</label>
+                    <input type="number" id="financeAmount" placeholder="0" min="0" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ (ไม่บังคับ)</label>
+                    <textarea id="financeNote" placeholder="หมายเหตุเพิ่มเติม..." rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="addFinanceRecord()" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        บันทึก
+                    </button>
+                    <button onclick="closeModal('addFinanceModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Finance Modal -->
+    <div id="editFinanceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-96 max-h-[90vh] overflow-y-auto modal-content">
+            <h3 class="text-lg font-semibold mb-4">แก้ไขรายการรายรับ-รายจ่าย</h3>
+            <div class="space-y-4">
+                <input type="hidden" id="editFinanceId">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">วันที่</label>
+                    <input type="date" id="editFinanceDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ประเภท</label>
+                    <select id="editFinanceType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <option value="">เลือกประเภท</option>
+                        <option value="income">รายรับ</option>
+                        <option value="expense">รายจ่าย</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">รายการ</label>
+                    <input type="text" id="editFinanceItem" placeholder="เช่น ค่าขนส่ง, ค่าเช่าสถานที่, ค่าบริการลูกค้า" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">จำนวนเงิน</label>
+                    <input type="number" id="editFinanceAmount" placeholder="0" min="0" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ (ไม่บังคับ)</label>
+                    <textarea id="editFinanceNote" placeholder="หมายเหตุเพิ่มเติม..." rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="updateFinanceRecord()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        อัปเดต
+                    </button>
+                    <button onclick="closeModal('editFinanceModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     <script>
@@ -563,7 +744,10 @@
 
         let sales = [];
         let reviews = [];
+        let financeRecords = [];
         let salesChart = null;
+        let financeChart = null;
+        let expenseChart = null;
         let currentRating = 0;
         let notificationId = 0;
 
@@ -728,6 +912,9 @@
                 // Load reviews from Firebase
                 await loadReviewsFromFirebase();
                 
+                // Load finance records from Firebase
+                await loadFinanceRecordsFromFirebase();
+                
                 // If no data exists, create initial data
                 if (products.length === 0) {
                     await createInitialProducts();
@@ -887,6 +1074,57 @@
             }
         }
 
+        // Firebase CRUD operations for Finance Records
+        async function loadFinanceRecordsFromFirebase() {
+            try {
+                const querySnapshot = await window.firestore.getDocs(window.firestore.collection(window.db, 'finance'));
+                financeRecords = [];
+                querySnapshot.forEach((doc) => {
+                    financeRecords.push({ id: doc.id, ...doc.data() });
+                });
+            } catch (error) {
+                console.error('Error loading finance records:', error);
+            }
+        }
+
+        async function saveFinanceRecordToFirebase(record) {
+            try {
+                const docRef = await window.firestore.addDoc(window.firestore.collection(window.db, 'finance'), record);
+                record.id = docRef.id;
+                financeRecords.push(record);
+                return docRef.id;
+            } catch (error) {
+                console.error('Error saving finance record:', error);
+                throw error;
+            }
+        }
+
+        async function updateFinanceRecordInFirebase(recordId, updates) {
+            try {
+                const recordRef = window.firestore.doc(window.db, 'finance', recordId);
+                await window.firestore.updateDoc(recordRef, updates);
+                
+                // Update local array
+                const recordIndex = financeRecords.findIndex(r => r.id === recordId);
+                if (recordIndex !== -1) {
+                    financeRecords[recordIndex] = { ...financeRecords[recordIndex], ...updates };
+                }
+            } catch (error) {
+                console.error('Error updating finance record:', error);
+                throw error;
+            }
+        }
+
+        async function deleteFinanceRecordFromFirebase(recordId) {
+            try {
+                await window.firestore.deleteDoc(window.firestore.doc(window.db, 'finance', recordId));
+                financeRecords = financeRecords.filter(r => r.id !== recordId);
+            } catch (error) {
+                console.error('Error deleting finance record:', error);
+                throw error;
+            }
+        }
+
         // Login functions
         function showAdminLogin() {
             document.getElementById('adminLoginModal').classList.remove('hidden');
@@ -1002,6 +1240,8 @@
                 loadProductsTable();
             } else if (sectionName === 'reviews') {
                 loadAdminReviews();
+            } else if (sectionName === 'finance') {
+                loadFinanceSection();
             } else if (sectionName === 'reports') {
                 loadReports();
             } else if (sectionName === 'dashboard') {
@@ -2268,6 +2508,347 @@
             }
         }
 
+        // Finance Management Functions
+        function loadFinanceSection() {
+            updateFinanceSummary();
+            loadFinanceTable();
+            createFinanceCharts();
+        }
+
+        function updateFinanceSummary() {
+            const totalIncome = financeRecords
+                .filter(record => record.type === 'income')
+                .reduce((sum, record) => sum + record.amount, 0);
+            
+            const totalExpense = financeRecords
+                .filter(record => record.type === 'expense')
+                .reduce((sum, record) => sum + record.amount, 0);
+            
+            const netBalance = totalIncome - totalExpense;
+            
+            document.getElementById('totalIncome').textContent = `฿${totalIncome.toLocaleString()}`;
+            document.getElementById('totalExpense').textContent = `฿${totalExpense.toLocaleString()}`;
+            document.getElementById('netBalance').textContent = `฿${netBalance.toLocaleString()}`;
+            
+            // Update color based on balance
+            const netBalanceElement = document.getElementById('netBalance');
+            if (netBalance >= 0) {
+                netBalanceElement.className = 'text-2xl font-bold text-green-600';
+            } else {
+                netBalanceElement.className = 'text-2xl font-bold text-red-600';
+            }
+        }
+
+        function loadFinanceTable() {
+            const tbody = document.getElementById('financeTable');
+            tbody.innerHTML = '';
+            
+            // Sort by date (newest first)
+            const sortedRecords = [...financeRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            if (sortedRecords.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            ยังไม่มีรายการรายรับ-รายจ่าย
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            sortedRecords.forEach(record => {
+                const row = document.createElement('tr');
+                const formattedDate = new Date(record.date).toLocaleDateString('th-TH');
+                const typeText = record.type === 'income' ? 'รายรับ' : 'รายจ่าย';
+                const typeColor = record.type === 'income' ? 'text-green-600' : 'text-red-600';
+                const amountColor = record.type === 'income' ? 'text-green-600' : 'text-red-600';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${formattedDate}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${record.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${typeText}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                        <p class="truncate">${record.item}</p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${amountColor}">
+                        ${record.type === 'income' ? '+' : '-'}฿${record.amount.toLocaleString()}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                        <p class="truncate">${record.note || '-'}</p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button onclick="showEditFinanceModal('${record.id}')" class="text-blue-600 hover:text-blue-900">
+                            แก้ไข
+                        </button>
+                        <button onclick="deleteFinanceRecord('${record.id}')" class="text-red-600 hover:text-red-900">
+                            ลบ
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function createFinanceCharts() {
+            createMonthlyFinanceChart();
+            createExpenseBreakdownChart();
+        }
+
+        function createMonthlyFinanceChart() {
+            const ctx = document.getElementById('financeChart').getContext('2d');
+            
+            // Get last 6 months data
+            const months = [];
+            const incomeData = [];
+            const expenseData = [];
+            
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                const monthStr = date.toISOString().slice(0, 7); // YYYY-MM
+                const monthName = date.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' });
+                
+                months.push(monthName);
+                
+                const monthIncome = financeRecords
+                    .filter(record => record.date.startsWith(monthStr) && record.type === 'income')
+                    .reduce((sum, record) => sum + record.amount, 0);
+                
+                const monthExpense = financeRecords
+                    .filter(record => record.date.startsWith(monthStr) && record.type === 'expense')
+                    .reduce((sum, record) => sum + record.amount, 0);
+                
+                incomeData.push(monthIncome);
+                expenseData.push(monthExpense);
+            }
+            
+            if (financeChart) {
+                financeChart.destroy();
+            }
+            
+            financeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'รายรับ',
+                            data: incomeData,
+                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                            borderColor: 'rgba(34, 197, 94, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'รายจ่าย',
+                            data: expenseData,
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function createExpenseBreakdownChart() {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            
+            // Group expenses by category (item name)
+            const expenseCategories = {};
+            financeRecords
+                .filter(record => record.type === 'expense')
+                .forEach(record => {
+                    if (expenseCategories[record.item]) {
+                        expenseCategories[record.item] += record.amount;
+                    } else {
+                        expenseCategories[record.item] = record.amount;
+                    }
+                });
+            
+            const labels = Object.keys(expenseCategories);
+            const data = Object.values(expenseCategories);
+            
+            if (expenseChart) {
+                expenseChart.destroy();
+            }
+            
+            if (labels.length === 0) {
+                // Show empty state
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'flex items-center justify-center h-full text-gray-500';
+                emptyDiv.textContent = 'ยังไม่มีข้อมูลรายจ่าย';
+                document.getElementById('expenseChart').parentNode.appendChild(emptyDiv);
+                return;
+            }
+            
+            // Generate colors for each category
+            const colors = [
+                '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4',
+                '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'
+            ];
+            
+            expenseChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function showAddFinanceModal() {
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('financeDate').value = today;
+            
+            // Clear form
+            document.getElementById('financeType').value = '';
+            document.getElementById('financeItem').value = '';
+            document.getElementById('financeAmount').value = '';
+            document.getElementById('financeNote').value = '';
+            
+            // Show modal
+            document.getElementById('addFinanceModal').classList.remove('hidden');
+            document.getElementById('addFinanceModal').classList.add('flex');
+        }
+
+        async function addFinanceRecord() {
+            const date = document.getElementById('financeDate').value;
+            const type = document.getElementById('financeType').value;
+            const item = document.getElementById('financeItem').value.trim();
+            const amount = parseFloat(document.getElementById('financeAmount').value);
+            const note = document.getElementById('financeNote').value.trim();
+            
+            if (!date || !type || !item || !amount || amount <= 0) {
+                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                return;
+            }
+            
+            try {
+                const record = {
+                    date: date,
+                    type: type,
+                    item: item,
+                    amount: amount,
+                    note: note,
+                    timestamp: new Date().toISOString()
+                };
+                
+                await saveFinanceRecordToFirebase(record);
+                
+                loadFinanceSection();
+                closeModal('addFinanceModal');
+                showNotification('เพิ่มรายการสำเร็จ!', 'success');
+            } catch (error) {
+                console.error('Error adding finance record:', error);
+                showNotification('เกิดข้อผิดพลาดในการเพิ่มรายการ', 'error');
+            }
+        }
+
+        function showEditFinanceModal(recordId) {
+            const record = financeRecords.find(r => r.id === recordId);
+            if (!record) return;
+            
+            // Fill form with current data
+            document.getElementById('editFinanceId').value = record.id;
+            document.getElementById('editFinanceDate').value = record.date;
+            document.getElementById('editFinanceType').value = record.type;
+            document.getElementById('editFinanceItem').value = record.item;
+            document.getElementById('editFinanceAmount').value = record.amount;
+            document.getElementById('editFinanceNote').value = record.note || '';
+            
+            // Show modal
+            document.getElementById('editFinanceModal').classList.remove('hidden');
+            document.getElementById('editFinanceModal').classList.add('flex');
+        }
+
+        async function updateFinanceRecord() {
+            const recordId = document.getElementById('editFinanceId').value;
+            const date = document.getElementById('editFinanceDate').value;
+            const type = document.getElementById('editFinanceType').value;
+            const item = document.getElementById('editFinanceItem').value.trim();
+            const amount = parseFloat(document.getElementById('editFinanceAmount').value);
+            const note = document.getElementById('editFinanceNote').value.trim();
+            
+            if (!date || !type || !item || !amount || amount <= 0) {
+                showNotification('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                return;
+            }
+            
+            try {
+                const updates = {
+                    date: date,
+                    type: type,
+                    item: item,
+                    amount: amount,
+                    note: note
+                };
+                
+                await updateFinanceRecordInFirebase(recordId, updates);
+                
+                loadFinanceSection();
+                closeModal('editFinanceModal');
+                showNotification('อัปเดตรายการสำเร็จ!', 'success');
+            } catch (error) {
+                console.error('Error updating finance record:', error);
+                showNotification('เกิดข้อผิดพลาดในการอัปเดตรายการ', 'error');
+            }
+        }
+
+        async function deleteFinanceRecord(recordId) {
+            showConfirmDialog(
+                'คุณต้องการลบรายการนี้หรือไม่?',
+                async () => {
+                    try {
+                        await deleteFinanceRecordFromFirebase(recordId);
+                        loadFinanceSection();
+                        showNotification('ลบรายการสำเร็จ!', 'success');
+                    } catch (error) {
+                        console.error('Error deleting finance record:', error);
+                        showNotification('เกิดข้อผิดพลาดในการลบรายการ', 'error');
+                    }
+                }
+            );
+        }
+
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             console.log('POS System initialized');
@@ -2278,5 +2859,5 @@
             showMainApp();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97759e5844dd45bd',t:'MTc1NjU3MDg1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9775a7b3245245bd',t:'MTc1NjU3MTI0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
